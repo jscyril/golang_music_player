@@ -161,8 +161,31 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.playerView.SetState(msg.State)
 		cmds = append(cmds, m.listenForEvents())
 
+	case views.FileAddedMsg:
+		// Add file to library
+		track, err := m.library.AddFile(msg.Path)
+		if err != nil {
+			m.err = err
+		} else {
+			// Update the library view with the new track
+			m.libraryView.AddTrack(track)
+		}
+
 	case tea.KeyMsg:
-		// Global keybindings
+		// If library view is in search mode, pass keys directly to it
+		// (except for critical global keys like quit)
+		if m.activeView == ViewLibrary && (m.libraryView.Searching || m.libraryView.Browsing) {
+			switch msg.String() {
+			case "ctrl+c":
+				m.cancel()
+				return m, tea.Quit
+			default:
+				m.libraryView, _ = m.libraryView.Update(msg)
+				return m, tea.Batch(cmds...)
+			}
+		}
+
+		// Global keybindings (only active when not searching)
 		switch msg.String() {
 		case "q", "ctrl+c":
 			m.cancel()

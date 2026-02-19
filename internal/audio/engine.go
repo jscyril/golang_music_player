@@ -13,10 +13,8 @@ import (
 	playerrors "github.com/jscyril/golang_music_player/pkg/errors"
 )
 
-// Ensure AudioEngine implements Player interface at compile time
 var _ api.Player = (*AudioEngine)(nil)
 
-// AudioEngine manages audio playback in a separate goroutine
 type AudioEngine struct {
 	state      *api.PlaybackState
 	commands   chan api.AudioCommand
@@ -30,7 +28,6 @@ type AudioEngine struct {
 	sampleRate beep.SampleRate
 }
 
-// NewAudioEngine creates a new audio engine instance
 func NewAudioEngine() *AudioEngine {
 	return &AudioEngine{
 		state: &api.PlaybackState{
@@ -44,18 +41,15 @@ func NewAudioEngine() *AudioEngine {
 	}
 }
 
-// Start begins the audio engine goroutines
 func (e *AudioEngine) Start(ctx context.Context) {
 	go e.run(ctx)
 	go e.trackPosition(ctx)
 }
 
-// Events returns the events channel for subscribing to audio events
 func (e *AudioEngine) Events() <-chan api.AudioEvent {
 	return e.events
 }
 
-// run is the main command processing loop
 func (e *AudioEngine) run(ctx context.Context) {
 	for {
 		select {
@@ -111,7 +105,6 @@ func (e *AudioEngine) run(ctx context.Context) {
 	}
 }
 
-// trackPosition updates playback position periodically
 func (e *AudioEngine) trackPosition(ctx context.Context) {
 	ticker := time.NewTicker(500 * time.Millisecond)
 	defer ticker.Stop()
@@ -135,7 +128,6 @@ func (e *AudioEngine) trackPosition(ctx context.Context) {
 	}
 }
 
-// playTrack loads and starts playing a track
 func (e *AudioEngine) playTrack(track *api.Track) error {
 	e.stopPlayback()
 
@@ -166,12 +158,10 @@ func (e *AudioEngine) playTrack(track *api.Track) error {
 	e.state.Position = 0
 	e.mu.Unlock()
 
-	// Initialize speaker with the format
 	if err := speaker.Init(format.SampleRate, format.SampleRate.N(time.Second/10)); err != nil {
 		return playerrors.NewPlayerError("speaker_init", track.ID, err)
 	}
 
-	// Play the audio
 	speaker.Play(beep.Seq(e.volume, beep.Callback(func() {
 		e.events <- api.AudioEvent{Type: api.EventTrackEnded, Payload: track}
 	})))
@@ -180,7 +170,6 @@ func (e *AudioEngine) playTrack(track *api.Track) error {
 	return nil
 }
 
-// stopPlayback stops the current playback
 func (e *AudioEngine) stopPlayback() {
 	e.mu.Lock()
 	defer e.mu.Unlock()
@@ -196,7 +185,6 @@ func (e *AudioEngine) stopPlayback() {
 	e.state.Position = 0
 }
 
-// seekTo seeks to a specific position
 func (e *AudioEngine) seekTo(pos time.Duration) {
 	e.mu.Lock()
 	defer e.mu.Unlock()
@@ -209,13 +197,11 @@ func (e *AudioEngine) seekTo(pos time.Duration) {
 	}
 }
 
-// cleanup releases resources
 func (e *AudioEngine) cleanup() {
 	e.stopPlayback()
 	close(e.events)
 }
 
-// Play starts playing the specified track
 func (e *AudioEngine) Play(track *api.Track) error {
 	if track == nil {
 		return playerrors.ErrTrackNotFound
@@ -224,31 +210,25 @@ func (e *AudioEngine) Play(track *api.Track) error {
 	return nil
 }
 
-// Pause pauses playback
 func (e *AudioEngine) Pause() error {
 	e.commands <- api.AudioCommand{Type: api.CmdPause}
 	return nil
 }
-
-// Resume resumes playback
 func (e *AudioEngine) Resume() error {
 	e.commands <- api.AudioCommand{Type: api.CmdResume}
 	return nil
 }
 
-// Stop stops playback
 func (e *AudioEngine) Stop() error {
 	e.commands <- api.AudioCommand{Type: api.CmdStop}
 	return nil
 }
 
-// Seek seeks to the specified position
 func (e *AudioEngine) Seek(position time.Duration) error {
 	e.commands <- api.AudioCommand{Type: api.CmdSeek, Payload: position}
 	return nil
 }
 
-// SetVolume sets the volume level (0.0 to 1.0)
 func (e *AudioEngine) SetVolume(level float64) error {
 	if level < 0 || level > 1 {
 		return playerrors.ErrInvalidVolume
@@ -257,12 +237,10 @@ func (e *AudioEngine) SetVolume(level float64) error {
 	return nil
 }
 
-// GetState returns a copy of the current playback state
 func (e *AudioEngine) GetState() *api.PlaybackState {
 	e.mu.RLock()
 	defer e.mu.RUnlock()
 
-	// Return a copy to prevent external modification
 	state := *e.state
 	if e.state.CurrentTrack != nil {
 		track := *e.state.CurrentTrack

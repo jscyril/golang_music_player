@@ -2,6 +2,10 @@ package library
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
+	"os"
+	"path/filepath"
 	"sort"
 	"strings"
 	"sync"
@@ -261,4 +265,80 @@ func (l *Library) Clear() {
 	l.albumIndex = make(map[string][]string)
 	l.genreIndex = make(map[string][]string)
 	l.TotalTracks = 0
+}
+
+// Save persists the library to a JSON file
+func (l *Library) Save(path string) error {
+	l.mu.RLock()
+	defer l.mu.RUnlock()
+
+	data, err := json.MarshalIndent(l, "", "  ")
+	if err != nil {
+		return fmt.Errorf("marshal library: %w", err)
+	}
+
+	if err := os.MkdirAll(filepath.Dir(path), 0755); err != nil {
+		return fmt.Errorf("create directory: %w", err)
+	}
+
+	if err := os.WriteFile(path, data, 0644); err != nil {
+		return fmt.Errorf("write library file: %w", err)
+	}
+
+	return nil
+}
+
+// LoadLibrary loads a library from a JSON file (or returns empty if not exists)
+func LoadLibrary(path string) (*Library, error) {
+	data, err := os.ReadFile(path)
+	if os.IsNotExist(err) {
+		return NewLibrary(), nil // First run, return empty library
+	}
+	if err != nil {
+		return nil, fmt.Errorf("read library file: %w", err)
+	}
+
+	var lib Library
+	if err := json.Unmarshal(data, &lib); err != nil {
+		return nil, fmt.Errorf("unmarshal library: %w", err)
+	}
+
+	// Initialize non-exported fields
+	lib.scanner = NewScanner(4)
+
+	// Rebuild indices from loaded tracks
+	lib.rebuildIndices()
+
+	return &lib, nil
+}
+
+// rebuildIndices rebuilds the secondary indices from the tracks map
+func (l *Library) rebuildIndices() {
+	l.artistIndex = make(map[string][]string)
+	l.albumIndex = make(map[string][]string)
+	l.genreIndex = make(map[string][]string)
+
+	for _, track := range l.Tracks {
+		if track.Artist != "" {
+			l.artistIndex[track.Artist] = append(l.artistIndex[track.Artist], track.ID)
+		}
+		if track.Album != "" {
+			l.albumIndex[track.Album] = append(l.albumIndex[track.Album], track.ID)
+		}
+		if track.Genre != "" {
+			l.genreIndex[track.Genre] = append(l.genreIndex[track.Genre], track.ID)
+		}
+	}
+
+	l.TotalTracks = len(l.Tracks)
+}
+
+// AddFile adds a single file from any location to the library
+func (l *Library) AddFile(filePath string) (*api.Track, error) {
+	track, err := l.scanner.ScanFile(filePath)
+	if err != nil {
+		return nil, fmt.Errorf("scan file: %w", err)
+	}
+	l.AddTrack(track)
+	return track, nil
 }

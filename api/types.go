@@ -25,7 +25,6 @@ type Playlist struct {
 	UpdatedAt   time.Time `json:"updated_at"`
 }
 
-// PlayerStatus represents playback status
 type PlayerStatus int
 
 const (

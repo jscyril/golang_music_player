@@ -51,17 +51,29 @@ func run() error {
 	audioEngine := audio.NewAudioEngine()
 	audioEngine.Start(ctx)
 
-	// Initialize library
-	lib := library.NewLibrary()
+	// Load persisted library (or create empty)
+	libraryPath := filepath.Join(cfg.DataDir, "library.json")
+	lib, err := library.LoadLibrary(libraryPath)
+	if err != nil {
+		return fmt.Errorf("load library: %w", err)
+	}
+	fmt.Printf("Loaded %d tracks from library\n", lib.TotalTracks)
 
-	// Scan music directories if configured
-	if len(cfg.MusicDirectories) > 0 {
-		fmt.Println("Scanning music directories...")
+	// Scan only if library is empty and directories are configured
+	if lib.TotalTracks == 0 && len(cfg.MusicDirectories) > 0 {
+		fmt.Println("Library empty, scanning music directories...")
 		if err := lib.Scan(ctx, cfg.MusicDirectories); err != nil {
 			fmt.Fprintf(os.Stderr, "Warning: scan error: %v\n", err)
 		}
 		fmt.Printf("Found %d tracks\n", lib.TotalTracks)
 	}
+
+	// Save library on exit
+	defer func() {
+		if err := lib.Save(libraryPath); err != nil {
+			fmt.Fprintf(os.Stderr, "Warning: save library: %v\n", err)
+		}
+	}()
 
 	// Initialize playlist manager
 	playlistPath := filepath.Join(cfg.DataDir, "playlists")
