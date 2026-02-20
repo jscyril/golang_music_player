@@ -66,21 +66,25 @@ func (e *AudioEngine) run(ctx context.Context) {
 				}
 
 			case api.CmdPause:
+				speaker.Lock()
 				e.mu.Lock()
 				if e.ctrl != nil {
 					e.ctrl.Paused = true
 					e.state.Status = api.StatusPaused
 				}
 				e.mu.Unlock()
+				speaker.Unlock()
 				e.events <- api.AudioEvent{Type: api.EventStateChange, Payload: e.state}
 
 			case api.CmdResume:
+				speaker.Lock()
 				e.mu.Lock()
 				if e.ctrl != nil {
 					e.ctrl.Paused = false
 					e.state.Status = api.StatusPlaying
 				}
 				e.mu.Unlock()
+				speaker.Unlock()
 				e.events <- api.AudioEvent{Type: api.EventStateChange, Payload: e.state}
 
 			case api.CmdStop:
@@ -89,6 +93,7 @@ func (e *AudioEngine) run(ctx context.Context) {
 
 			case api.CmdVolume:
 				level := cmd.Payload.(float64)
+				speaker.Lock()
 				e.mu.Lock()
 				if e.volume != nil {
 					// Convert 0-1 range to decibel-like scale
@@ -96,6 +101,7 @@ func (e *AudioEngine) run(ctx context.Context) {
 				}
 				e.state.Volume = level
 				e.mu.Unlock()
+				speaker.Unlock()
 
 			case api.CmdSeek:
 				pos := cmd.Payload.(time.Duration)
@@ -114,10 +120,18 @@ func (e *AudioEngine) trackPosition(ctx context.Context) {
 		case <-ctx.Done():
 			return
 		case <-ticker.C:
+			speaker.Lock()
 			e.mu.RLock()
 			if e.state.Status == api.StatusPlaying && e.streamer != nil {
 				pos := e.streamer.Position()
 				e.state.Position = e.sampleRate.D(pos)
+			}
+			e.mu.RUnlock()
+			speaker.Unlock()
+
+			// Send event outside of locks to avoid blocking
+			e.mu.RLock()
+			if e.state.Status == api.StatusPlaying {
 				e.events <- api.AudioEvent{
 					Type:    api.EventPositionUpdate,
 					Payload: e.state.Position,
@@ -171,26 +185,38 @@ func (e *AudioEngine) playTrack(track *api.Track) error {
 }
 
 func (e *AudioEngine) stopPlayback() {
-	e.mu.Lock()
-	defer e.mu.Unlock()
-
+	// speaker.Clear() has its own internal lock, call it first
 	speaker.Clear()
-	if e.streamer != nil {
-		e.streamer.Close()
-		e.streamer = nil
-	}
+
+	e.mu.Lock()
+	streamer := e.streamer
+	e.streamer = nil
 	e.ctrl = nil
 	e.volume = nil
 	e.state.Status = api.StatusStopped
 	e.state.Position = 0
+	e.mu.Unlock()
+
+	// Close streamer outside of locks
+	if streamer != nil {
+		streamer.Close()
+	}
 }
 
 func (e *AudioEngine) seekTo(pos time.Duration) {
+	speaker.Lock()
 	e.mu.Lock()
 	defer e.mu.Unlock()
+	defer speaker.Unlock()
 
 	if e.streamer != nil {
 		newPos := e.sampleRate.N(pos)
+		if newPos < 0 {
+			newPos = 0
+		}
+		if length := e.streamer.Len(); newPos >= length {
+			newPos = length - 1
+		}
 		if err := e.streamer.Seek(newPos); err == nil {
 			e.state.Position = pos
 		}

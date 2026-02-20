@@ -1,0 +1,466 @@
+<!DOCTYPE html><html><head>
+      <title>APPLICATION_FLOW</title>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      
+      <link rel="stylesheet" href="file:////home/jscyril/.antigravity/extensions/shd101wyy.markdown-preview-enhanced-0.8.20-universal/crossnote/dependencies/katex/katex.min.css">
+      
+      
+      <script type="text/javascript" src="file:////home/jscyril/.antigravity/extensions/shd101wyy.markdown-preview-enhanced-0.8.20-universal/crossnote/dependencies/mermaid/mermaid.min.js" charset="UTF-8"></script>
+      
+      
+      <style>
+      code[class*=language-],pre[class*=language-]{color:#333;background:0 0;font-family:Consolas,"Liberation Mono",Menlo,Courier,monospace;text-align:left;white-space:pre;word-spacing:normal;word-break:normal;word-wrap:normal;line-height:1.4;-moz-tab-size:8;-o-tab-size:8;tab-size:8;-webkit-hyphens:none;-moz-hyphens:none;-ms-hyphens:none;hyphens:none}pre[class*=language-]{padding:.8em;overflow:auto;border-radius:3px;background:#f5f5f5}:not(pre)>code[class*=language-]{padding:.1em;border-radius:.3em;white-space:normal;background:#f5f5f5}.token.blockquote,.token.comment{color:#969896}.token.cdata{color:#183691}.token.doctype,.token.macro.property,.token.punctuation,.token.variable{color:#333}.token.builtin,.token.important,.token.keyword,.token.operator,.token.rule{color:#a71d5d}.token.attr-value,.token.regex,.token.string,.token.url{color:#183691}.token.atrule,.token.boolean,.token.code,.token.command,.token.constant,.token.entity,.token.number,.token.property,.token.symbol{color:#0086b3}.token.prolog,.token.selector,.token.tag{color:#63a35c}.token.attr-name,.token.class,.token.class-name,.token.function,.token.id,.token.namespace,.token.pseudo-class,.token.pseudo-element,.token.url-reference .token.variable{color:#795da3}.token.entity{cursor:help}.token.title,.token.title .token.punctuation{font-weight:700;color:#1d3e81}.token.list{color:#ed6a43}.token.inserted{background-color:#eaffea;color:#55a532}.token.deleted{background-color:#ffecec;color:#bd2c00}.token.bold{font-weight:700}.token.italic{font-style:italic}.language-json .token.property{color:#183691}.language-markup .token.tag .token.punctuation{color:#333}.language-css .token.function,code.language-css{color:#0086b3}.language-yaml .token.atrule{color:#63a35c}code.language-yaml{color:#183691}.language-ruby .token.function{color:#333}.language-markdown .token.url{color:#795da3}.language-makefile .token.symbol{color:#795da3}.language-makefile .token.variable{color:#183691}.language-makefile .token.builtin{color:#0086b3}.language-bash .token.keyword{color:#0086b3}pre[data-line]{position:relative;padding:1em 0 1em 3em}pre[data-line] .line-highlight-wrapper{position:absolute;top:0;left:0;background-color:transparent;display:block;width:100%}pre[data-line] .line-highlight{position:absolute;left:0;right:0;padding:inherit 0;margin-top:1em;background:hsla(24,20%,50%,.08);background:linear-gradient(to right,hsla(24,20%,50%,.1) 70%,hsla(24,20%,50%,0));pointer-events:none;line-height:inherit;white-space:pre}pre[data-line] .line-highlight:before,pre[data-line] .line-highlight[data-end]:after{content:attr(data-start);position:absolute;top:.4em;left:.6em;min-width:1em;padding:0 .5em;background-color:hsla(24,20%,50%,.4);color:#f4f1ef;font:bold 65%/1.5 sans-serif;text-align:center;vertical-align:.3em;border-radius:999px;text-shadow:none;box-shadow:0 1px #fff}pre[data-line] .line-highlight[data-end]:after{content:attr(data-end);top:auto;bottom:.4em}html body{font-family:'Helvetica Neue',Helvetica,'Segoe UI',Arial,freesans,sans-serif;font-size:16px;line-height:1.6;color:#333;background-color:#fff;overflow:initial;box-sizing:border-box;word-wrap:break-word}html body>:first-child{margin-top:0}html body h1,html body h2,html body h3,html body h4,html body h5,html body h6{line-height:1.2;margin-top:1em;margin-bottom:16px;color:#000}html body h1{font-size:2.25em;font-weight:300;padding-bottom:.3em}html body h2{font-size:1.75em;font-weight:400;padding-bottom:.3em}html body h3{font-size:1.5em;font-weight:500}html body h4{font-size:1.25em;font-weight:600}html body h5{font-size:1.1em;font-weight:600}html body h6{font-size:1em;font-weight:600}html body h1,html body h2,html body h3,html body h4,html body h5{font-weight:600}html body h5{font-size:1em}html body h6{color:#5c5c5c}html body strong{color:#000}html body del{color:#5c5c5c}html body a:not([href]){color:inherit;text-decoration:none}html body a{color:#08c;text-decoration:none}html body a:hover{color:#00a3f5;text-decoration:none}html body img{max-width:100%}html body>p{margin-top:0;margin-bottom:16px;word-wrap:break-word}html body>ol,html body>ul{margin-bottom:16px}html body ol,html body ul{padding-left:2em}html body ol.no-list,html body ul.no-list{padding:0;list-style-type:none}html body ol ol,html body ol ul,html body ul ol,html body ul ul{margin-top:0;margin-bottom:0}html body li{margin-bottom:0}html body li.task-list-item{list-style:none}html body li>p{margin-top:0;margin-bottom:0}html body .task-list-item-checkbox{margin:0 .2em .25em -1.8em;vertical-align:middle}html body .task-list-item-checkbox:hover{cursor:pointer}html body blockquote{margin:16px 0;font-size:inherit;padding:0 15px;color:#5c5c5c;background-color:#f0f0f0;border-left:4px solid #d6d6d6}html body blockquote>:first-child{margin-top:0}html body blockquote>:last-child{margin-bottom:0}html body hr{height:4px;margin:32px 0;background-color:#d6d6d6;border:0 none}html body table{margin:10px 0 15px 0;border-collapse:collapse;border-spacing:0;display:block;width:100%;overflow:auto;word-break:normal;word-break:keep-all}html body table th{font-weight:700;color:#000}html body table td,html body table th{border:1px solid #d6d6d6;padding:6px 13px}html body dl{padding:0}html body dl dt{padding:0;margin-top:16px;font-size:1em;font-style:italic;font-weight:700}html body dl dd{padding:0 16px;margin-bottom:16px}html body code{font-family:Menlo,Monaco,Consolas,'Courier New',monospace;font-size:.85em;color:#000;background-color:#f0f0f0;border-radius:3px;padding:.2em 0}html body code::after,html body code::before{letter-spacing:-.2em;content:'\00a0'}html body pre>code{padding:0;margin:0;word-break:normal;white-space:pre;background:0 0;border:0}html body .highlight{margin-bottom:16px}html body .highlight pre,html body pre{padding:1em;overflow:auto;line-height:1.45;border:#d6d6d6;border-radius:3px}html body .highlight pre{margin-bottom:0;word-break:normal}html body pre code,html body pre tt{display:inline;max-width:initial;padding:0;margin:0;overflow:initial;line-height:inherit;word-wrap:normal;background-color:transparent;border:0}html body pre code:after,html body pre code:before,html body pre tt:after,html body pre tt:before{content:normal}html body blockquote,html body dl,html body ol,html body p,html body pre,html body ul{margin-top:0;margin-bottom:16px}html body kbd{color:#000;border:1px solid #d6d6d6;border-bottom:2px solid #c7c7c7;padding:2px 4px;background-color:#f0f0f0;border-radius:3px}@media print{html body{background-color:#fff}html body h1,html body h2,html body h3,html body h4,html body h5,html body h6{color:#000;page-break-after:avoid}html body blockquote{color:#5c5c5c}html body pre{page-break-inside:avoid}html body table{display:table}html body img{display:block;max-width:100%;max-height:100%}html body code,html body pre{word-wrap:break-word;white-space:pre}}.markdown-preview{width:100%;height:100%;box-sizing:border-box}.markdown-preview ul{list-style:disc}.markdown-preview ul ul{list-style:circle}.markdown-preview ul ul ul{list-style:square}.markdown-preview ol{list-style:decimal}.markdown-preview ol ol,.markdown-preview ul ol{list-style-type:lower-roman}.markdown-preview ol ol ol,.markdown-preview ol ul ol,.markdown-preview ul ol ol,.markdown-preview ul ul ol{list-style-type:lower-alpha}.markdown-preview .newpage,.markdown-preview .pagebreak{page-break-before:always}.markdown-preview pre.line-numbers{position:relative;padding-left:3.8em;counter-reset:linenumber}.markdown-preview pre.line-numbers>code{position:relative}.markdown-preview pre.line-numbers .line-numbers-rows{position:absolute;pointer-events:none;top:1em;font-size:100%;left:0;width:3em;letter-spacing:-1px;border-right:1px solid #999;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none}.markdown-preview pre.line-numbers .line-numbers-rows>span{pointer-events:none;display:block;counter-increment:linenumber}.markdown-preview pre.line-numbers .line-numbers-rows>span:before{content:counter(linenumber);color:#999;display:block;padding-right:.8em;text-align:right}.markdown-preview .mathjax-exps .MathJax_Display{text-align:center!important}.markdown-preview:not([data-for=preview]) .code-chunk .code-chunk-btn-group{display:none}.markdown-preview:not([data-for=preview]) .code-chunk .status{display:none}.markdown-preview:not([data-for=preview]) .code-chunk .output-div{margin-bottom:16px}.markdown-preview .md-toc{padding:0}.markdown-preview .md-toc .md-toc-link-wrapper .md-toc-link{display:inline;padding:.25rem 0}.markdown-preview .md-toc .md-toc-link-wrapper .md-toc-link div,.markdown-preview .md-toc .md-toc-link-wrapper .md-toc-link p{display:inline}.markdown-preview .md-toc .md-toc-link-wrapper.highlighted .md-toc-link{font-weight:800}.scrollbar-style::-webkit-scrollbar{width:8px}.scrollbar-style::-webkit-scrollbar-track{border-radius:10px;background-color:transparent}.scrollbar-style::-webkit-scrollbar-thumb{border-radius:5px;background-color:rgba(150,150,150,.66);border:4px solid rgba(150,150,150,.66);background-clip:content-box}html body[for=html-export]:not([data-presentation-mode]){position:relative;width:100%;height:100%;top:0;left:0;margin:0;padding:0;overflow:auto}html body[for=html-export]:not([data-presentation-mode]) .markdown-preview{position:relative;top:0;min-height:100vh}@media screen and (min-width:914px){html body[for=html-export]:not([data-presentation-mode]) .markdown-preview{padding:2em calc(50% - 457px + 2em)}}@media screen and (max-width:914px){html body[for=html-export]:not([data-presentation-mode]) .markdown-preview{padding:2em}}@media screen and (max-width:450px){html body[for=html-export]:not([data-presentation-mode]) .markdown-preview{font-size:14px!important;padding:1em}}@media print{html body[for=html-export]:not([data-presentation-mode]) #sidebar-toc-btn{display:none}}html body[for=html-export]:not([data-presentation-mode]) #sidebar-toc-btn{position:fixed;bottom:8px;left:8px;font-size:28px;cursor:pointer;color:inherit;z-index:99;width:32px;text-align:center;opacity:.4}html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] #sidebar-toc-btn{opacity:1}html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc{position:fixed;top:0;left:0;width:300px;height:100%;padding:32px 0 48px 0;font-size:14px;box-shadow:0 0 4px rgba(150,150,150,.33);box-sizing:border-box;overflow:auto;background-color:inherit}html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc::-webkit-scrollbar{width:8px}html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc::-webkit-scrollbar-track{border-radius:10px;background-color:transparent}html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc::-webkit-scrollbar-thumb{border-radius:5px;background-color:rgba(150,150,150,.66);border:4px solid rgba(150,150,150,.66);background-clip:content-box}html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc a{text-decoration:none}html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc .md-toc{padding:0 16px}html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc .md-toc .md-toc-link-wrapper .md-toc-link{display:inline;padding:.25rem 0}html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc .md-toc .md-toc-link-wrapper .md-toc-link div,html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc .md-toc .md-toc-link-wrapper .md-toc-link p{display:inline}html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc .md-toc .md-toc-link-wrapper.highlighted .md-toc-link{font-weight:800}html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .markdown-preview{left:300px;width:calc(100% - 300px);padding:2em calc(50% - 457px - 300px / 2);margin:0;box-sizing:border-box}@media screen and (max-width:1274px){html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .markdown-preview{padding:2em}}@media screen and (max-width:450px){html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .markdown-preview{width:100%}}html body[for=html-export]:not([data-presentation-mode]):not([html-show-sidebar-toc]) .markdown-preview{left:50%;transform:translateX(-50%)}html body[for=html-export]:not([data-presentation-mode]):not([html-show-sidebar-toc]) .md-sidebar-toc{display:none}
+/* Please visit the URL below for more information: */
+/*   https://shd101wyy.github.io/markdown-preview-enhanced/#/customize-css */
+
+      </style>
+      <!-- The content below will be included at the end of the <head> element. --><script type="text/javascript">
+  document.addEventListener("DOMContentLoaded", function () {
+    // your code here
+  });
+</script></head><body for="html-export">
+    
+    
+      <div class="crossnote markdown-preview  ">
+      
+<h1 id="application-flow---golang-music-player">Application Flow - Golang Music Player </h1>
+<p>A complete walkthrough of how the application executes, tracing every function call across files.</p>
+<hr>
+<h2 id="architecture-overview">Architecture Overview </h2>
+<div class="mermaid">graph TB
+    main["cmd/player/main.go"]
+    config["internal/config/config.go"]
+    audio["internal/audio/engine.go"]
+    decoder["internal/audio/decoder.go"]
+    lib["internal/library/library.go"]
+    scanner["internal/library/scanner.go"]
+    metadata["internal/library/metadata.go"]
+    plmgr["internal/playlist/playlist.go"]
+    queue["internal/playlist/queue.go"]
+    app["internal/ui/app.go"]
+    pview["internal/ui/views/player.go"]
+    lview["internal/ui/views/library.go"]
+    plview["internal/ui/views/playlist.go"]
+    progress["internal/ui/components/progress.go"]
+    tracklist["internal/ui/components/list.go"]
+    search["internal/ui/components/search.go"]
+    filebrowser["internal/ui/components/filebrowser.go"]
+    types["api/types.go"]
+    errors["pkg/errors/errors.go"]
+    events["pkg/events/bus.go"]
+
+    main --&gt; config
+    main --&gt; audio
+    main --&gt; lib
+    main --&gt; plmgr
+    main --&gt; app
+
+    audio --&gt; decoder
+    audio --&gt; types
+    audio --&gt; errors
+
+    lib --&gt; scanner
+    lib --&gt; metadata
+    lib --&gt; types
+    lib --&gt; errors
+
+    scanner --&gt; metadata
+
+    app --&gt; pview
+    app --&gt; lview
+    app --&gt; plview
+    app --&gt; audio
+    app --&gt; lib
+    app --&gt; queue
+
+    pview --&gt; progress
+    lview --&gt; tracklist
+    lview --&gt; search
+    lview --&gt; filebrowser
+    plview --&gt; tracklist
+</div><hr>
+<h2 id="1-entry-point--cmdplayermaingo">1. Entry Point — <code>cmd/player/main.go</code> </h2>
+<p>The application starts at [<code>main()</code>](file:///mnt/data/college/projects/golang_music_player/cmd/player/main.go#L18-L23), which simply calls <code>run()</code> and exits with an error message if it fails.</p>
+<h3 id="run--the-bootstrap-function-line-2591"><code>run()</code> — The bootstrap function (Line 25–91) </h3>
+<p>This is where all initialization happens, in this order:</p>
+<h4 id="step-1-load-configuration">Step 1: Load Configuration </h4>
+<pre data-role="codeBlock" data-info="go" class="language-go go"><code>configPath <span class="token operator">:=</span> config<span class="token punctuation">.</span><span class="token function">GetConfigPath</span><span class="token punctuation">(</span><span class="token punctuation">)</span>      <span class="token comment">// → internal/config/config.go</span>
+cfg<span class="token punctuation">,</span> err <span class="token operator">:=</span> config<span class="token punctuation">.</span><span class="token function">LoadOrCreate</span><span class="token punctuation">(</span>configPath<span class="token punctuation">)</span> <span class="token comment">// → internal/config/config.go</span>
+</code></pre><ul>
+<li>[<code>config.GetConfigPath()</code>](file:///mnt/data/college/projects/golang_music_player/internal/config/config.go#L118-L137) checks <code>MUSIC_PLAYER_CONFIG</code> env var → <code>XDG_CONFIG_HOME</code> → falls back to <code>~/.config/musicplayer/config.json</code></li>
+<li>[<code>config.LoadOrCreate()</code>](file:///mnt/data/college/projects/golang_music_player/internal/config/config.go#L101-L116) tries to load the config with <code>LoadConfig()</code>. If the file doesn't exist, it creates one with <code>GetDefaultConfig()</code> and saves it via <code>SaveConfig()</code></li>
+</ul>
+<h4 id="step-2-create-data-directory">Step 2: Create Data Directory </h4>
+<pre data-role="codeBlock" data-info="go" class="language-go go"><code>os<span class="token punctuation">.</span><span class="token function">MkdirAll</span><span class="token punctuation">(</span>cfg<span class="token punctuation">.</span>DataDir<span class="token punctuation">,</span> <span class="token number">0755</span><span class="token punctuation">)</span>
+</code></pre><h4 id="step-3-setup-graceful-shutdown">Step 3: Setup Graceful Shutdown </h4>
+<p>Creates a cancellable <code>context.Context</code> and listens for <code>SIGINT</code>/<code>SIGTERM</code> signals in a goroutine to trigger <code>cancel()</code>.</p>
+<h4 id="step-4-initialize-audio-engine">Step 4: Initialize Audio Engine </h4>
+<pre data-role="codeBlock" data-info="go" class="language-go go"><code>audioEngine <span class="token operator">:=</span> audio<span class="token punctuation">.</span><span class="token function">NewAudioEngine</span><span class="token punctuation">(</span><span class="token punctuation">)</span>  <span class="token comment">// → internal/audio/engine.go</span>
+audioEngine<span class="token punctuation">.</span><span class="token function">Start</span><span class="token punctuation">(</span>ctx<span class="token punctuation">)</span>                 <span class="token comment">// → internal/audio/engine.go</span>
+</code></pre><ul>
+<li>[<code>audio.NewAudioEngine()</code>](file:///mnt/data/college/projects/golang_music_player/internal/audio/engine.go#L31-L42) creates the engine with default state (stopped, volume 0.5, no repeat), and buffered channels for commands (10) and events (20)</li>
+<li>[<code>audioEngine.Start(ctx)</code>](file:///mnt/data/college/projects/golang_music_player/internal/audio/engine.go#L44-L47) launches <strong>two goroutines</strong>:
+<ul>
+<li><code>go e.run(ctx)</code> — the <strong>command loop</strong> that processes play/pause/stop/seek/volume commands</li>
+<li><code>go e.trackPosition(ctx)</code> — ticks every 500ms to update the current playback position</li>
+</ul>
+</li>
+</ul>
+<h4 id="step-5-load-library">Step 5: Load Library </h4>
+<pre data-role="codeBlock" data-info="go" class="language-go go"><code>libraryPath <span class="token operator">:=</span> filepath<span class="token punctuation">.</span><span class="token function">Join</span><span class="token punctuation">(</span>cfg<span class="token punctuation">.</span>DataDir<span class="token punctuation">,</span> <span class="token string">"library.json"</span><span class="token punctuation">)</span>
+lib<span class="token punctuation">,</span> err <span class="token operator">:=</span> library<span class="token punctuation">.</span><span class="token function">LoadLibrary</span><span class="token punctuation">(</span>libraryPath<span class="token punctuation">)</span>  <span class="token comment">// → internal/library/library.go</span>
+</code></pre><ul>
+<li>[<code>library.LoadLibrary()</code>](file:///mnt/data/college/projects/golang_music_player/internal/library/library.go#L291-L313) reads <code>library.json</code>, unmarshals the tracks, and calls <code>rebuildIndices()</code> to populate artist/album indices</li>
+</ul>
+<h4 id="step-6-scan-for-music-if-library-is-empty">Step 6: Scan for Music (if library is empty) </h4>
+<pre data-role="codeBlock" data-info="go" class="language-go go"><code><span class="token keyword keyword-if">if</span> lib<span class="token punctuation">.</span>TotalTracks <span class="token operator">==</span> <span class="token number">0</span> <span class="token operator">&amp;&amp;</span> <span class="token function">len</span><span class="token punctuation">(</span>cfg<span class="token punctuation">.</span>MusicDirectories<span class="token punctuation">)</span> <span class="token operator">&gt;</span> <span class="token number">0</span> <span class="token punctuation">{</span>
+    lib<span class="token punctuation">.</span><span class="token function">Scan</span><span class="token punctuation">(</span>ctx<span class="token punctuation">,</span> cfg<span class="token punctuation">.</span>MusicDirectories<span class="token punctuation">)</span>  <span class="token comment">// → internal/library/library.go</span>
+<span class="token punctuation">}</span>
+</code></pre><ul>
+<li>[<code>lib.Scan()</code>](file:///mnt/data/college/projects/golang_music_player/internal/library/library.go#L233-L256) creates a [<code>Scanner</code>](file:///mnt/data/college/projects/golang_music_player/internal/library/scanner.go#L15-L19) (4 workers by default)</li>
+<li>The scanner's [<code>Scan()</code>](file:///mnt/data/college/projects/golang_music_player/internal/library/scanner.go#L49-L139) method:
+<ol>
+<li>Launches a <strong>file discovery goroutine</strong> that walks directories with <code>filepath.WalkDir</code>, filtering for <code>.mp3</code>, <code>.wav</code>, <code>.flac</code> files</li>
+<li>Launches a <strong>worker pool</strong> (4 goroutines) that read files from the channel and call [<code>MetadataReader.Read()</code>](file:///mnt/data/college/projects/golang_music_player/internal/library/metadata.go#L22-L65)</li>
+<li><code>MetadataReader.Read()</code> opens files, generates an MD5-based track ID, reads ID3/metadata tags via <code>github.com/dhowden/tag</code>, and returns an <code>api.Track</code></li>
+<li>Back in <code>lib.Scan()</code>, each discovered track is added via [<code>lib.AddTrack()</code>](file:///mnt/data/college/projects/golang_music_player/internal/library/library.go#L45-L63), which updates the tracks map and artist/album indices</li>
+</ol>
+</li>
+</ul>
+<h4 id="step-7-defer-library-save">Step 7: Defer Library Save </h4>
+<pre data-role="codeBlock" data-info="go" class="language-go go"><code><span class="token keyword keyword-defer">defer</span> <span class="token keyword keyword-func">func</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    lib<span class="token punctuation">.</span><span class="token function">Save</span><span class="token punctuation">(</span>libraryPath<span class="token punctuation">)</span>  <span class="token comment">// → internal/library/library.go</span>
+<span class="token punctuation">}</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+</code></pre><p>[<code>lib.Save()</code>](file:///mnt/data/college/projects/golang_music_player/internal/library/library.go#L270-L289) marshals the library to JSON and writes it to <code>library.json</code></p>
+<h4 id="step-8-initialize-playlist-manager">Step 8: Initialize Playlist Manager </h4>
+<pre data-role="codeBlock" data-info="go" class="language-go go"><code>playlistPath <span class="token operator">:=</span> filepath<span class="token punctuation">.</span><span class="token function">Join</span><span class="token punctuation">(</span>cfg<span class="token punctuation">.</span>DataDir<span class="token punctuation">,</span> <span class="token string">"playlists"</span><span class="token punctuation">)</span>
+plManager <span class="token operator">:=</span> playlist<span class="token punctuation">.</span><span class="token function">NewManager</span><span class="token punctuation">(</span>playlistPath<span class="token punctuation">)</span>  <span class="token comment">// → internal/playlist/playlist.go</span>
+plManager<span class="token punctuation">.</span><span class="token function">LoadAll</span><span class="token punctuation">(</span><span class="token punctuation">)</span>                              <span class="token comment">// → internal/playlist/playlist.go</span>
+</code></pre><ul>
+<li>[<code>playlist.NewManager()</code>](file:///mnt/data/college/projects/golang_music_player/internal/playlist/playlist.go#L22-L28) creates a manager with an in-memory map</li>
+<li>[<code>plManager.LoadAll()</code>](file:///mnt/data/college/projects/golang_music_player/internal/playlist/playlist.go#L179-L213) reads all <code>.json</code> files from the playlists directory and loads them into memory</li>
+</ul>
+<h4 id="step-9-launch-the-ui">Step 9: Launch the UI </h4>
+<pre data-role="codeBlock" data-info="go" class="language-go go"><code>ui<span class="token punctuation">.</span><span class="token function">Run</span><span class="token punctuation">(</span>audioEngine<span class="token punctuation">,</span> lib<span class="token punctuation">,</span> plManager<span class="token punctuation">)</span>  <span class="token comment">// → internal/ui/app.go</span>
+</code></pre><hr>
+<h2 id="2-ui-initialization--internaluiappgo">2. UI Initialization — <code>internal/ui/app.go</code> </h2>
+<h3 id="uirun-line-409415"><code>ui.Run()</code> (Line 409–415) </h3>
+<pre data-role="codeBlock" data-info="go" class="language-go go"><code><span class="token keyword keyword-func">func</span> <span class="token function">Run</span><span class="token punctuation">(</span>engine<span class="token punctuation">,</span> lib<span class="token punctuation">,</span> plManager<span class="token punctuation">)</span> <span class="token builtin">error</span> <span class="token punctuation">{</span>
+    model <span class="token operator">:=</span> <span class="token function">NewModel</span><span class="token punctuation">(</span>engine<span class="token punctuation">,</span> lib<span class="token punctuation">,</span> plManager<span class="token punctuation">)</span>
+    p <span class="token operator">:=</span> tea<span class="token punctuation">.</span><span class="token function">NewProgram</span><span class="token punctuation">(</span>model<span class="token punctuation">,</span> tea<span class="token punctuation">.</span><span class="token function">WithAltScreen</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> tea<span class="token punctuation">.</span><span class="token function">WithMouseCellMotion</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+    <span class="token boolean">_</span><span class="token punctuation">,</span> err <span class="token operator">:=</span> p<span class="token punctuation">.</span><span class="token function">Run</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+    <span class="token keyword keyword-return">return</span> err
+<span class="token punctuation">}</span>
+</code></pre><p>Creates the Bubble Tea program with alt-screen and mouse support.</p>
+<h3 id="newmodelfilemntdatacollegeprojectsgolang_music_playerinternaluiappgol65-l105">[<code>NewModel()</code>](file:///mnt/data/college/projects/golang_music_player/internal/ui/app.go#L65-L105) </h3>
+<p>Creates the main <code>Model</code> struct and initializes:</p>
+<ol>
+<li><strong>Sub-views</strong> — by calling constructors in <code>internal/ui/views/</code>:
+<ul>
+<li>[<code>views.NewPlayerView()</code>](file:///mnt/data/college/projects/golang_music_player/internal/ui/views/player.go#L30-L56) → creates a [<code>components.NewProgressBar()</code>](file:///mnt/data/college/projects/golang_music_player/internal/ui/components/progress.go#L30-L42)</li>
+<li>[<code>views.NewLibraryView()</code>](file:///mnt/data/college/projects/golang_music_player/internal/ui/views/library.go#L31-L51) → creates a [<code>components.NewTrackList()</code>](file:///mnt/data/college/projects/golang_music_player/internal/ui/components/list.go#L26-L47), [<code>components.NewSearchInput()</code>](file:///mnt/data/college/projects/golang_music_player/internal/ui/components/search.go#L20-L35), and [<code>components.NewFileBrowser()</code>](file:///mnt/data/college/projects/golang_music_player/internal/ui/components/filebrowser.go#L39-L75)</li>
+<li>[<code>views.NewPlaylistView()</code>](file:///mnt/data/college/projects/golang_music_player/internal/ui/views/playlist.go#L25-L44) → creates a <code>components.NewTrackList()</code></li>
+</ul>
+</li>
+<li><strong>Playback queue</strong> — [<code>playlist.NewQueue()</code>](file:///mnt/data/college/projects/golang_music_player/internal/playlist/queue.go#L21-L29)</li>
+<li><strong>Data binding</strong> — loads library tracks into the view with <code>lib.GetAllTracks()</code> → <code>libraryView.SetTracks()</code>, and loads playlists with <code>plManager.GetAll()</code> → <code>playlistView.SetPlaylists()</code></li>
+<li>The <strong>default view</strong> is set to <code>ViewLibrary</code></li>
+</ol>
+<h3 id="initfilemntdatacollegeprojectsgolang_music_playerinternaluiappgol107-l113">[<code>Init()</code>](file:///mnt/data/college/projects/golang_music_player/internal/ui/app.go#L107-L113) </h3>
+<p>Starts two async loops:</p>
+<ul>
+<li><strong><code>tickCmd()</code></strong> — sends a <code>TickMsg</code> every 500ms to refresh the UI</li>
+<li><strong><code>listenForEvents()</code></strong> — listens on <code>audioEngine.Events()</code> channel for playback events</li>
+</ul>
+<hr>
+<h2 id="3-main-event-loop--modelupdate">3. Main Event Loop — <code>Model.Update()</code> </h2>
+<p>[<code>Update()</code>](file:///mnt/data/college/projects/golang_music_player/internal/ui/app.go#L144-L348) is the heart of the application. It handles all messages:</p>
+<h3 id="window-resize-teawindowsizemsg">Window Resize (<code>tea.WindowSizeMsg</code>) </h3>
+<p>Updates dimensions and calls <code>updateViewSizes()</code> to resize all sub-views.</p>
+<h3 id="timer-tick-tickmsg">Timer Tick (<code>TickMsg</code>) </h3>
+<ul>
+<li>Calls <code>audioEngine.GetState()</code> → [<code>engine.go</code>](file:///mnt/data/college/projects/golang_music_player/internal/audio/engine.go#L266-L276)</li>
+<li>Updates the player view with <code>playerView.SetState()</code> → [<code>player.go</code>](file:///mnt/data/college/projects/golang_music_player/internal/ui/views/player.go#L58-L64), which also calls <code>ProgressBar.SetProgress()</code></li>
+<li>Schedules the next tick</li>
+</ul>
+<h3 id="audio-state-update-stateupdatemsg">Audio State Update (<code>StateUpdateMsg</code>) </h3>
+<ul>
+<li>Updates player view state</li>
+<li>Re-subscribes to audio events via <code>listenForEvents()</code></li>
+<li>On <code>EventTrackEnded</code>: auto-advances by calling <code>queue.Next()</code> → [<code>queue.go</code>](file:///mnt/data/college/projects/golang_music_player/internal/playlist/queue.go#L70-L94), then <code>audioEngine.Play(next)</code></li>
+</ul>
+<h3 id="file-added-viewsfileaddedmsg">File Added (<code>views.FileAddedMsg</code>) </h3>
+<ul>
+<li>Calls <code>library.AddFile(path)</code> → [<code>library.go</code>](file:///mnt/data/college/projects/golang_music_player/internal/library/library.go#L336-L344), which uses <code>Scanner.ScanFile()</code> → <code>MetadataReader.Read()</code></li>
+<li>Updates the library view with <code>libraryView.AddTrack()</code></li>
+</ul>
+<h3 id="keyboard-input-teakeymsg">Keyboard Input (<code>tea.KeyMsg</code>) </h3>
+<p><strong>Search/Browse interception</strong> — If the library view is in search or browse mode, all keys (except <code>ctrl+c</code>) are forwarded to <code>libraryView.Update()</code> → [<code>library.go view</code>](file:///mnt/data/college/projects/golang_music_player/internal/ui/views/library.go#L65-L129)</p>
+<p><strong>Global keybindings</strong> (when not searching):</p>
+<table>
+<thead>
+<tr>
+<th>Key</th>
+<th>Action</th>
+<th>Calls</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>q</code> / <code>ctrl+c</code></td>
+<td>Quit</td>
+<td><code>cancel()</code> + <code>tea.Quit</code></td>
+</tr>
+<tr>
+<td><code>1</code> / <code>2</code> / <code>3</code></td>
+<td>Switch view</td>
+<td>Sets <code>activeView</code></td>
+</tr>
+<tr>
+<td><code>Tab</code></td>
+<td>Cycle views</td>
+<td><code>activeView = (activeView + 1) % 3</code></td>
+</tr>
+<tr>
+<td><code>Space</code></td>
+<td>Play/Pause toggle</td>
+<td><code>audioEngine.Pause()</code> / <code>Resume()</code> / <code>Play()</code> → [<code>engine.go</code>](file:///mnt/data/college/projects/golang_music_player/internal/audio/engine.go#L231-L246)</td>
+</tr>
+<tr>
+<td><code>s</code></td>
+<td>Stop</td>
+<td><code>audioEngine.Stop()</code> → [<code>engine.go</code>](file:///mnt/data/college/projects/golang_music_player/internal/audio/engine.go#L248-L251)</td>
+</tr>
+<tr>
+<td><code>n</code></td>
+<td>Next track</td>
+<td><code>queue.Next()</code> → <code>audioEngine.Play()</code></td>
+</tr>
+<tr>
+<td><code>p</code></td>
+<td>Previous track</td>
+<td><code>queue.Previous()</code> → <code>audioEngine.Play()</code></td>
+</tr>
+<tr>
+<td><code>→</code></td>
+<td>Seek forward 5s</td>
+<td><code>audioEngine.Seek(pos + 5s)</code> → [<code>engine.go</code>](file:///mnt/data/college/projects/golang_music_player/internal/audio/engine.go#L253-L256)</td>
+</tr>
+<tr>
+<td><code>←</code></td>
+<td>Seek backward 5s</td>
+<td><code>audioEngine.Seek(pos - 5s)</code></td>
+</tr>
+<tr>
+<td><code>+</code> / <code>=</code></td>
+<td>Volume up 10%</td>
+<td><code>audioEngine.SetVolume()</code> → [<code>engine.go</code>](file:///mnt/data/college/projects/golang_music_player/internal/audio/engine.go#L258-L264)</td>
+</tr>
+<tr>
+<td><code>-</code></td>
+<td>Volume down 10%</td>
+<td><code>audioEngine.SetVolume()</code></td>
+</tr>
+<tr>
+<td><code>r</code></td>
+<td>Cycle repeat mode</td>
+<td><code>queue.SetRepeatMode()</code> → [<code>queue.go</code>](file:///mnt/data/college/projects/golang_music_player/internal/playlist/queue.go#L216-L221)</td>
+</tr>
+<tr>
+<td><code>S</code></td>
+<td>Toggle shuffle</td>
+<td><code>queue.Shuffle()</code> / <code>Unshuffle()</code> → [<code>queue.go</code>](file:///mnt/data/college/projects/golang_music_player/internal/playlist/queue.go#L156-L214)</td>
+</tr>
+<tr>
+<td><code>Enter</code></td>
+<td>Play selected</td>
+<td>See below</td>
+</tr>
+<tr>
+<td>Other keys</td>
+<td>Forward to active view</td>
+<td><code>libraryView.Update()</code> / <code>playlistView.Update()</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Enter key flow:</strong></p>
+<ol>
+<li>Gets the selected track from the active view (<code>libraryView.SelectedTrack()</code> or <code>playlistView.SelectedTrack()</code>)</li>
+<li>Loads all tracks into the queue with <code>queue.Set(tracks)</code></li>
+<li>Jumps to the selected track with <code>queue.JumpTo(i)</code></li>
+<li>Calls <code>audioEngine.Play(track)</code></li>
+</ol>
+<h3 id="mouse-click-teamousemsg">Mouse Click (<code>tea.MouseMsg</code>) </h3>
+<ul>
+<li>Checks if the click is on the progress bar row</li>
+<li>Calls <code>playerView.ProgressBarClickSeek()</code> → [<code>player.go</code>](file:///mnt/data/college/projects/golang_music_player/internal/ui/views/player.go#L79-L83) → <code>ProgressBar.HandleClick()</code> → [<code>progress.go</code>](file:///mnt/data/college/projects/golang_music_player/internal/ui/components/progress.go#L60-L76)</li>
+<li>Sends a seek command via <code>audioEngine.Seek()</code></li>
+</ul>
+<hr>
+<h2 id="4-audio-playback--internalaudioenginego">4. Audio Playback — <code>internal/audio/engine.go</code> </h2>
+<h3 id="command-processing--run-line-53112">Command Processing — <code>run()</code> (Line 53–112) </h3>
+<p>The <code>run()</code> goroutine processes commands from the <code>commands</code> channel:</p>
+<table>
+<thead>
+<tr>
+<th>Command</th>
+<th>Action</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>CmdPlay</code></td>
+<td>Calls [<code>playTrack()</code>](file:///mnt/data/college/projects/golang_music_player/internal/audio/engine.go#L145-L185): stops current playback → opens file → calls [<code>DecodeAudio()</code>](file:///mnt/data/college/projects/golang_music_player/internal/audio/decoder.go#L32-L46) → creates <code>beep.Ctrl</code> + <code>effects.Volume</code> → initializes speaker → starts playback with <code>speaker.Play()</code></td>
+</tr>
+<tr>
+<td><code>CmdPause</code></td>
+<td>Sets <code>ctrl.Paused = true</code>, status → <code>StatusPaused</code></td>
+</tr>
+<tr>
+<td><code>CmdResume</code></td>
+<td>Sets <code>ctrl.Paused = false</code>, status → <code>StatusPlaying</code></td>
+</tr>
+<tr>
+<td><code>CmdStop</code></td>
+<td>Calls [<code>stopPlayback()</code>](file:///mnt/data/college/projects/golang_music_player/internal/audio/engine.go#L187-L204): clears speaker → closes streamer → resets state</td>
+</tr>
+<tr>
+<td><code>CmdVolume</code></td>
+<td>Adjusts <code>volume.Volume</code> using a linear-to-dB scale</td>
+</tr>
+<tr>
+<td><code>CmdSeek</code></td>
+<td>Calls [<code>seekTo()</code>](file:///mnt/data/college/projects/golang_music_player/internal/audio/engine.go#L206-L224): converts duration to sample position → <code>streamer.Seek()</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="audio-decoding--internalaudiodecodergo">Audio Decoding — <code>internal/audio/decoder.go</code> </h3>
+<p>[<code>DecodeAudio()</code>](file:///mnt/data/college/projects/golang_music_player/internal/audio/decoder.go#L32-L46) routes to the correct decoder based on file extension:</p>
+<ul>
+<li><code>.mp3</code> → <code>beep/mp3.Decode()</code></li>
+<li><code>.wav</code> → <code>beep/wav.Decode()</code></li>
+<li><code>.flac</code> → <code>beep/flac.Decode()</code></li>
+</ul>
+<h3 id="position-tracking--trackposition-line-114143">Position Tracking — <code>trackPosition()</code> (Line 114–143) </h3>
+<p>Every 500ms, reads the current sample position from the streamer and emits an <code>EventPositionUpdate</code> event, which triggers a UI refresh via <code>listenForEvents()</code>.</p>
+<hr>
+<h2 id="5-view-rendering--modelview">5. View Rendering — <code>Model.View()</code> </h2>
+<p>[<code>View()</code>](file:///mnt/data/college/projects/golang_music_player/internal/ui/app.go#L360-L391) renders the UI:</p>
+<ol>
+<li><strong>Tab bar</strong> — <code>renderTabs()</code> shows <code>[1] Player | [2] Library | [3] Playlist</code></li>
+<li><strong>Player view</strong> — always visible (shows track info, progress bar, volume, controls)</li>
+<li><strong>Active content view</strong> — one of:
+<ul>
+<li><strong>Library view</strong> → search bar + track list + help text</li>
+<li><strong>Playlist view</strong> → playlist list or track list + help text</li>
+</ul>
+</li>
+<li><strong>Error display</strong> — shows any error at the bottom</li>
+</ol>
+<h3 id="library-view-modes">Library View Modes </h3>
+<ul>
+<li><strong>Normal</strong> — shows track list, <code>[/]</code> activates search, <code>[a]</code> opens file browser</li>
+<li><strong>Search mode</strong> — keys go to <code>SearchInput.Update()</code> → live filtering via <code>filterTracks()</code></li>
+<li><strong>Browse mode</strong> — keys go to <code>FileBrowser.Update()</code> → navigate filesystem → select file → emits <code>FileAddedMsg</code></li>
+</ul>
+<hr>
+<h2 id="6-shared-types--apitypesgo">6. Shared Types — <code>api/types.go</code> </h2>
+<p>Defines all shared data structures used across the application:</p>
+<ul>
+<li><code>Track</code> — song metadata (title, artist, album, duration, file path, etc.)</li>
+<li><code>Playlist</code> — named collection of tracks</li>
+<li><code>PlaybackState</code> — current player status, position, volume, queue</li>
+<li><code>AudioCommand</code> / <code>AudioEvent</code> — communication between UI and audio engine</li>
+<li><code>Player</code> interface — defines the playback contract that <code>AudioEngine</code> implements</li>
+<li>Enums: <code>PlayerStatus</code>, <code>RepeatMode</code>, <code>CommandType</code>, <code>EventType</code></li>
+</ul>
+<hr>
+<h2 id="7-error-handling--pkgerrorserrorsgo">7. Error Handling — <code>pkg/errors/errors.go</code> </h2>
+<p>Provides:</p>
+<ul>
+<li><strong>Sentinel errors</strong>: <code>ErrTrackNotFound</code>, <code>ErrPlaylistNotFound</code>, <code>ErrInvalidFormat</code>, <code>ErrPlaybackFailed</code>, <code>ErrEmptyQueue</code>, <code>ErrInvalidVolume</code></li>
+<li><strong><code>PlayerError</code></strong> — wraps errors with operation name and track ID context</li>
+<li><strong><code>ScanError</code></strong> — wraps errors with the file path that failed</li>
+</ul>
+<hr>
+<h2 id="8-event-bus--pkgeventsbusgo">8. Event Bus — <code>pkg/events/bus.go</code> </h2>
+<p>A pub/sub system (currently not wired into <code>main.go</code> but available):</p>
+<ul>
+<li><code>Subscribe(eventType)</code> — listen for specific event types</li>
+<li><code>SubscribeAll()</code> — listen for all events</li>
+<li><code>Publish(event)</code> — broadcast to subscribers (non-blocking)</li>
+<li>Thread-safe via <code>sync.RWMutex</code></li>
+</ul>
+<hr>
+<h2 id="summary-complete-call-chain">Summary: Complete Call Chain </h2>
+<pre data-role="codeBlock" data-info="" class="language-text"><code>main() → run()
+  ├── config.GetConfigPath() → config.LoadOrCreate()
+  ├── audio.NewAudioEngine() → audioEngine.Start()
+  │     ├── goroutine: run() — command loop
+  │     └── goroutine: trackPosition() — position updates
+  ├── library.LoadLibrary() → rebuildIndices()
+  ├── library.Scan() (if empty)
+  │     └── Scanner.Scan()
+  │           ├── goroutine: WalkDir (file discovery)
+  │           └── goroutines: worker pool → MetadataReader.Read()
+  ├── playlist.NewManager() → LoadAll()
+  └── ui.Run()
+        └── NewModel() → tea.NewProgram().Run()
+              ├── Init() → tickCmd() + listenForEvents()
+              └── Update() loop:
+                    ├── TickMsg → audioEngine.GetState() → playerView.SetState()
+                    ├── StateUpdateMsg → playerView.SetState()
+                    ├── KeyMsg → audioEngine.Play/Pause/Stop/Seek/Volume
+                    │            queue.Next/Previous/Shuffle
+                    │            libraryView.Update() / playlistView.Update()
+                    ├── MouseMsg → ProgressBar.HandleClick() → audioEngine.Seek()
+                    └── FileAddedMsg → library.AddFile() → libraryView.AddTrack()
+</code></pre>
+      </div>
+      
+      
+    
+    
+    <script type="module">
+// TODO: If ZenUML gets integrated into mermaid in the future,
+//      we can remove the following lines.
+
+
+var MERMAID_CONFIG = ({"startOnLoad":false});
+if (typeof MERMAID_CONFIG !== 'undefined') {
+  MERMAID_CONFIG.startOnLoad = false
+  MERMAID_CONFIG.cloneCssStyles = false
+  MERMAID_CONFIG.theme = "default"
+}
+
+mermaid.initialize(MERMAID_CONFIG || {})
+if (typeof(window['Reveal']) !== 'undefined') {
+  function mermaidRevealHelper(event) {
+    var currentSlide = event.currentSlide
+    var diagrams = currentSlide.querySelectorAll('.mermaid')
+    for (var i = 0; i < diagrams.length; i++) {
+      var diagram = diagrams[i]
+      if (!diagram.hasAttribute('data-processed')) {
+        mermaid.init(null, diagram, ()=> {
+          Reveal.slide(event.indexh, event.indexv)
+        })
+      }
+    }
+  }
+  Reveal.addEventListener('slidetransitionend', mermaidRevealHelper)
+  Reveal.addEventListener('ready', mermaidRevealHelper)
+  await mermaid.run({
+    nodes: document.querySelectorAll('.mermaid')
+  })
+} else {
+  await mermaid.run({
+    nodes: document.querySelectorAll('.mermaid')
+  })
+}
+</script>
+    
+    
+    
+  
+    </body></html>

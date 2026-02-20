@@ -3,6 +3,7 @@ package views
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
@@ -67,8 +68,22 @@ func (v PlayerView) Update(msg tea.Msg) (PlayerView, tea.Cmd) {
 	return v, nil
 }
 
+// ProgressBarRow returns the screen row offset of the progress bar
+// within the player view (relative to the top of the player view content).
+// Layout: status+title (1) + artist (1) + album (1) + blank (1) + progress (row 4)
+// Plus border top (1) + padding (1) = 6 rows from the top of the rendered box.
+func (v *PlayerView) ProgressBarRow() int {
+	return 6
+}
+
+// ProgressBarClickSeek converts a mouse click X position to a seek duration.
+// barOffsetX is the X offset of the bar within the terminal (border + padding).
+func (v *PlayerView) ProgressBarClickSeek(clickX, barOffsetX int) time.Duration {
+	return v.ProgressBar.HandleClick(clickX, barOffsetX)
+}
+
 // View renders the player view
-func (v PlayerView) View() string {
+func (v *PlayerView) View() string {
 	var sb strings.Builder
 
 	if v.State == nil || v.State.CurrentTrack == nil {
@@ -125,7 +140,7 @@ func (v PlayerView) View() string {
 
 	sb.WriteString("\n\n")
 	sb.WriteString(v.ControlsStyle.Render(
-		"[Space] Play/Pause  [s] Stop  [n] Next  [p] Prev  [+/-] Volume  [q] Quit",
+		"[Space] Play/Pause  [s] Stop  [n] Next  [p] Prev  [←/→] Seek ±5s  [+/-] Volume  [q] Quit",
 	))
 
 	return v.BorderStyle.Width(v.Width - 4).Render(sb.String())

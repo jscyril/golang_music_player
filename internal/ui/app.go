@@ -226,6 +226,26 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				}
 			}
 
+		case "right": // Seek forward 5 seconds
+			state := m.audioEngine.GetState()
+			if state.Status == api.StatusPlaying || state.Status == api.StatusPaused {
+				newPos := state.Position + 5*time.Second
+				if state.CurrentTrack != nil && newPos > state.CurrentTrack.Duration {
+					newPos = state.CurrentTrack.Duration
+				}
+				m.audioEngine.Seek(newPos)
+			}
+
+		case "left": // Seek backward 5 seconds
+			state := m.audioEngine.GetState()
+			if state.Status == api.StatusPlaying || state.Status == api.StatusPaused {
+				newPos := state.Position - 5*time.Second
+				if newPos < 0 {
+					newPos = 0
+				}
+				m.audioEngine.Seek(newPos)
+			}
+
 		case "+", "=": // Volume up
 			state := m.audioEngine.GetState()
 			newVol := state.Volume + 0.1
@@ -304,6 +324,24 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.playlistView, _ = m.playlistView.Update(msg)
 			}
 		}
+
+	case tea.MouseMsg:
+		// Handle click-to-seek on progress bar
+		if msg.Action == tea.MouseActionPress && msg.Button == tea.MouseButtonLeft {
+			state := m.audioEngine.GetState()
+			if state.Status == api.StatusPlaying || state.Status == api.StatusPaused {
+				// The progress bar row is at a fixed offset from the top:
+				// tab bar (1) + newline gap (1) + player border top (1) + padding (1)
+				// + status/title (1) + artist (1) + album (1) + blank (1) = row 8 (0-indexed: 7)
+				progressRow := 1 + m.playerView.ProgressBarRow() // tab + player offset
+				if msg.Y == progressRow {
+					// Border left (1) + padding left (2) = 3 chars offset
+					barOffsetX := 3
+					seekPos := m.playerView.ProgressBarClickSeek(msg.X, barOffsetX)
+					m.audioEngine.Seek(seekPos)
+				}
+			}
+		}
 	}
 
 	return m, tea.Batch(cmds...)
@@ -371,7 +409,7 @@ func (m Model) renderTabs() string {
 // Run starts the bubbletea program
 func Run(engine *audio.AudioEngine, lib *library.Library, plManager *playlist.Manager) error {
 	model := NewModel(engine, lib, plManager)
-	p := tea.NewProgram(model, tea.WithAltScreen())
+	p := tea.NewProgram(model, tea.WithAltScreen(), tea.WithMouseCellMotion())
 	_, err := p.Run()
 	return err
 }
