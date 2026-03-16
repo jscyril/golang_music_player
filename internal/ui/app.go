@@ -10,6 +10,7 @@ import (
 	"github.com/jscyril/golang_music_player/api"
 	"github.com/jscyril/golang_music_player/internal/audio"
 	"github.com/jscyril/golang_music_player/internal/library"
+	"github.com/jscyril/golang_music_player/internal/logger"
 	"github.com/jscyril/golang_music_player/internal/playlist"
 	"github.com/jscyril/golang_music_player/internal/ui/views"
 )
@@ -61,6 +62,9 @@ type TickMsg time.Time
 type StateUpdateMsg struct {
 	State *api.PlaybackState
 }
+
+// TrackEndedMsg is sent when a track finishes playing
+type TrackEndedMsg struct{}
 
 // NewModel creates a new application model
 func NewModel(engine *audio.AudioEngine, lib *library.Library, plManager *playlist.Manager) Model {
@@ -128,10 +132,8 @@ func (m Model) listenForEvents() tea.Cmd {
 			case api.EventStateChange, api.EventTrackStarted, api.EventPositionUpdate:
 				return StateUpdateMsg{State: m.audioEngine.GetState()}
 			case api.EventTrackEnded:
-				// Auto-advance to next track
-				if next := m.queue.Next(); next != nil {
-					m.audioEngine.Play(next)
-				}
+				return TrackEndedMsg{}
+			case api.EventError:
 				return StateUpdateMsg{State: m.audioEngine.GetState()}
 			}
 		case <-m.ctx.Done():
@@ -161,12 +163,28 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.playerView.SetState(msg.State)
 		cmds = append(cmds, m.listenForEvents())
 
+	case TrackEndedMsg:
+		// Auto-advance to next track (handled inside Update for thread safety)
+		logger.Debug("TrackEndedMsg received, advancing to next track")
+		if next := m.queue.Next(); next != nil {
+			logger.Info("Auto-advancing to next track: %q", next.Title)
+			m.audioEngine.Play(next)
+		} else {
+			logger.Info("Queue exhausted, no next track")
+		}
+		state := m.audioEngine.GetState()
+		m.playerView.SetState(state)
+		cmds = append(cmds, m.listenForEvents())
+
 	case views.FileAddedMsg:
 		// Add file to library
+		logger.Info("Adding file to library: %s", msg.Path)
 		track, err := m.library.AddFile(msg.Path)
 		if err != nil {
+			logger.Error("Failed to add file %s: %v", msg.Path, err)
 			m.err = err
 		} else {
+			logger.Info("Added track: %q by %s", track.Title, track.Artist)
 			// Update the library view with the new track
 			m.libraryView.AddTrack(track)
 		}
@@ -204,18 +222,23 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case " ": // Space - play/pause
 			state := m.audioEngine.GetState()
 			if state.Status == api.StatusPlaying {
+				logger.Debug("User paused playback")
 				m.audioEngine.Pause()
 			} else if state.Status == api.StatusPaused {
+				logger.Debug("User resumed playback")
 				m.audioEngine.Resume()
 			} else if m.queue.Current() != nil {
+				logger.Debug("User started playback from stopped state")
 				m.audioEngine.Play(m.queue.Current())
 			}
 
 		case "s": // Stop
+			logger.Debug("User stopped playback")
 			m.audioEngine.Stop()
 
 		case "n": // Next
 			if next := m.queue.Next(); next != nil {
+				logger.Info("User skipped to next track: %q", next.Title)
 				m.audioEngine.Play(next)
 			}
 
@@ -312,6 +335,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				}
 			}
 			if track != nil {
+				logger.Info("User selected track: %q by %s", track.Title, track.Artist)
 				m.audioEngine.Play(track)
 			}
 
@@ -408,8 +432,14 @@ func (m Model) renderTabs() string {
 
 // Run starts the bubbletea program
 func Run(engine *audio.AudioEngine, lib *library.Library, plManager *playlist.Manager) error {
+	logger.Info("Starting UI")
 	model := NewModel(engine, lib, plManager)
 	p := tea.NewProgram(model, tea.WithAltScreen(), tea.WithMouseCellMotion())
 	_, err := p.Run()
+	if err != nil {
+		logger.Error("UI exited with error: %v", err)
+	} else {
+		logger.Info("UI exited cleanly")
+	}
 	return err
 }

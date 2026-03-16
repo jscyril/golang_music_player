@@ -5,9 +5,14 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/dhowden/tag"
+	"github.com/faiface/beep"
+	"github.com/faiface/beep/flac"
+	"github.com/faiface/beep/mp3"
+	"github.com/faiface/beep/wav"
 	"github.com/jscyril/golang_music_player/api"
 )
 
@@ -33,17 +38,22 @@ func (r *MetadataReader) Read(filePath string) (*api.Track, error) {
 	// Try to read metadata tags
 	metadata, err := tag.ReadFrom(file)
 	if err != nil {
-		// If no tags, return basic track info from filename
+		// If no tags, compute duration from the audio stream and return basic track info.
+		file.Seek(0, 0)
+		duration := computeAudioDuration(filePath, file)
 		return &api.Track{
 			ID:        id,
 			Title:     filepath.Base(filePath),
+			Duration:  duration,
 			FilePath:  filePath,
 			CreatedAt: time.Now(),
 		}, nil
 	}
 
-	// Get duration if available (requires seeking back to start)
-	var duration time.Duration
+	// Compute duration by decoding the audio stream.
+	// Seek back to the start first (tag.ReadFrom may have advanced the cursor).
+	file.Seek(0, 0)
+	duration := computeAudioDuration(filePath, file)
 
 	track := &api.Track{
 		ID:        id,
@@ -96,4 +106,38 @@ func getOrDefault(value, defaultValue string) string {
 		return defaultValue
 	}
 	return value
+}
+
+// computeAudioDuration decodes the audio file to determine its total duration.
+// r must be seeked to position 0 before calling. Returns 0 on any error.
+func computeAudioDuration(filePath string, r interface {
+	Read([]byte) (int, error)
+	Seek(int64, int) (int64, error)
+	Close() error
+}) time.Duration {
+	ext := strings.ToLower(filepath.Ext(filePath))
+
+	var streamer beep.StreamSeekCloser
+	var format beep.Format
+	var err error
+
+	switch ext {
+	case ".mp3":
+		streamer, format, err = mp3.Decode(r)
+	case ".wav":
+		streamer, format, err = wav.Decode(r)
+	case ".flac":
+		streamer, format, err = flac.Decode(r)
+	default:
+		return 0
+	}
+	if err != nil {
+		return 0
+	}
+	defer streamer.Close()
+
+	if format.SampleRate <= 0 || streamer.Len() <= 0 {
+		return 0
+	}
+	return format.SampleRate.D(streamer.Len())
 }

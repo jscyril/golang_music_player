@@ -7,6 +7,9 @@
 *.dll
 *.so
 *.dylib
+/bin/
+musicplayer
+
 
 # Test binary, built with `go test -c`
 *.test
