@@ -153,6 +153,41 @@ func (q *Queue) Remove(index int) error {
 	return nil
 }
 
+// Move reorders a queued track while preserving the current track pointer.
+func (q *Queue) Move(from, to int) error {
+	q.mu.Lock()
+	defer q.mu.Unlock()
+
+	if from < 0 || from >= len(q.tracks) || to < 0 || to >= len(q.tracks) {
+		return errors.New("index out of bounds")
+	}
+	if from == to {
+		return nil
+	}
+
+	var current *api.Track
+	if q.index >= 0 && q.index < len(q.tracks) {
+		current = q.tracks[q.index]
+	}
+
+	track := q.tracks[from]
+	q.tracks = append(q.tracks[:from], q.tracks[from+1:]...)
+	q.tracks = append(q.tracks[:to], append([]*api.Track{track}, q.tracks[to:]...)...)
+	q.original = nil
+	q.shuffle = false
+
+	if current != nil {
+		for i, t := range q.tracks {
+			if t.ID == current.ID {
+				q.index = i
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
 // Shuffle shuffles the queue (Fisher-Yates algorithm)
 func (q *Queue) Shuffle() {
 	q.mu.Lock()

@@ -160,13 +160,18 @@ func (v LibraryView) View() string {
 	}
 
 	var sb strings.Builder
+	trackList := v.TrackList
+	trackList.Width = v.Width - 8
+	trackList.Height = v.Height - 12
+	searchBar := v.SearchBar
+	searchBar.Width = clampLibraryWidth(v.Width-12, 80)
 
 	// Search bar
-	sb.WriteString(v.SearchBar.View())
+	sb.WriteString(searchBar.View())
 	sb.WriteString("\n\n")
 
 	// Track list
-	sb.WriteString(v.TrackList.View())
+	sb.WriteString(trackList.View())
 
 	// Help
 	sb.WriteString("\n\n")
@@ -174,8 +179,18 @@ func (v LibraryView) View() string {
 	if v.Searching {
 		sb.WriteString(helpStyle.Render("[Enter] Confirm  [Esc] Cancel"))
 	} else {
-		sb.WriteString(helpStyle.Render("[/] Search  [a] Add Files  [Enter] Play  [↑↓] Navigate"))
+		sb.WriteString(helpStyle.Render("[/] Search  [a] Add Files  [A] Add to Playlist  [Enter] Play  [↑↓] Navigate"))
 	}
 
-	return v.BorderStyle.Width(v.Width - 4).Render(sb.String())
+	return renderFixedPanel(sb.String(), v.Width, v.Height, v.BorderStyle)
+}
+
+func clampLibraryWidth(width, maxWidth int) int {
+	if width < 24 {
+		return 24
+	}
+	if width > maxWidth {
+		return maxWidth
+	}
+	return width
 }

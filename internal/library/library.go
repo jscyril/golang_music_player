@@ -3,6 +3,7 @@ package library
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -46,6 +47,12 @@ func NewLibrary() *Library {
 func (l *Library) AddTrack(track *api.Track) {
 	l.mu.Lock()
 	defer l.mu.Unlock()
+
+	if existing, ok := l.Tracks[track.ID]; ok {
+		l.removeFromIndex(l.artistIndex, existing.Artist, existing.ID)
+		l.removeFromIndex(l.albumIndex, existing.Album, existing.ID)
+		l.removeFromIndex(l.genreIndex, existing.Genre, existing.ID)
+	}
 
 	l.Tracks[track.ID] = track
 	l.TotalTracks = len(l.Tracks)
@@ -232,12 +239,21 @@ func (l *Library) removeFromIndex(index map[string][]string, key, trackID string
 
 // Scan scans the configured paths and adds tracks to the library
 func (l *Library) Scan(ctx context.Context, paths []string) error {
+	l.mu.Lock()
 	l.ScanPaths = paths
+	l.mu.Unlock()
+
 	tracks, errs := l.scanner.Scan(ctx, paths)
 
-	// Drain error channel in background to prevent blocking workers
+	var scanErrs []error
+	var errMu sync.Mutex
+	errsDone := make(chan struct{})
 	go func() {
-		for range errs {
+		defer close(errsDone)
+		for err := range errs {
+			errMu.Lock()
+			scanErrs = append(scanErrs, err)
+			errMu.Unlock()
 		}
 	}()
 
@@ -250,6 +266,13 @@ func (l *Library) Scan(ctx context.Context, paths []string) error {
 	l.LastScanned = time.Now()
 	l.mu.Unlock()
 
+	<-errsDone
+
+	errMu.Lock()
+	defer errMu.Unlock()
+	if len(scanErrs) > 0 {
+		return errors.Join(scanErrs...)
+	}
 	return nil
 }
 

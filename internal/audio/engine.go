@@ -242,15 +242,22 @@ func (e *AudioEngine) seekTo(pos time.Duration) {
 	defer speaker.Unlock()
 
 	if e.streamer != nil {
+		if pos < 0 {
+			pos = 0
+		}
 		newPos := e.trackRate.N(pos)
 		if newPos < 0 {
 			newPos = 0
 		}
-		if length := e.streamer.Len(); newPos >= length {
+		length := e.streamer.Len()
+		if length <= 0 {
+			return
+		}
+		if newPos >= length {
 			newPos = length - 1
 		}
 		if err := e.streamer.Seek(newPos); err == nil {
-			e.state.Position = pos
+			e.state.Position = e.trackRate.D(newPos)
 		}
 	}
 }

@@ -15,9 +15,11 @@ type PlaylistView struct {
 	Width       int
 	Height      int
 	TrackList   components.TrackList
+	CreateInput components.SearchInput
 	Playlists   []*api.Playlist
 	Current     *api.Playlist
 	ShowingList bool // true = showing playlists, false = showing tracks
+	Creating    bool
 	Selected    int
 	BorderStyle lipgloss.Style
 	TitleStyle  lipgloss.Style
@@ -32,6 +34,7 @@ func NewPlaylistView(width, height int) PlaylistView {
 		Width:       width,
 		Height:      height,
 		TrackList:   trackList,
+		CreateInput: components.NewSearchInput(width - 8),
 		Playlists:   make([]*api.Playlist, 0),
 		ShowingList: true,
 		BorderStyle: lipgloss.NewStyle().
@@ -47,6 +50,22 @@ func NewPlaylistView(width, height int) PlaylistView {
 // SetPlaylists sets the available playlists
 func (v *PlaylistView) SetPlaylists(playlists []*api.Playlist) {
 	v.Playlists = playlists
+	if v.Selected >= len(v.Playlists) && len(v.Playlists) > 0 {
+		v.Selected = len(v.Playlists) - 1
+	}
+	if len(v.Playlists) == 0 {
+		v.Selected = 0
+	}
+	if v.Current != nil {
+		for _, playlist := range playlists {
+			if playlist.ID == v.Current.ID {
+				v.SetCurrentPlaylist(playlist)
+				return
+			}
+		}
+		v.Current = nil
+		v.ShowingList = true
+	}
 }
 
 // SetCurrentPlaylist sets the current playlist to display
@@ -63,10 +82,40 @@ func (v *PlaylistView) SetCurrentPlaylist(playlist *api.Playlist) {
 	}
 }
 
+func (v *PlaylistView) BeginCreate() {
+	v.Creating = true
+	v.ShowingList = true
+	v.Current = nil
+	v.CreateInput = components.NewSearchInput(v.Width - 8)
+	v.CreateInput.Placeholder = "Playlist name"
+	v.CreateInput.Prompt = "New: "
+	v.CreateInput.Focus()
+}
+
+func (v *PlaylistView) CancelCreate() {
+	v.Creating = false
+	v.CreateInput.Blur()
+	v.CreateInput.Clear()
+}
+
+func (v *PlaylistView) CreateName() string {
+	return strings.TrimSpace(v.CreateInput.Value)
+}
+
 // Update handles messages
 func (v PlaylistView) Update(msg tea.Msg) (PlaylistView, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
+		if v.Creating {
+			switch msg.String() {
+			case "esc":
+				v.CancelCreate()
+			default:
+				v.CreateInput, _ = v.CreateInput.Update(msg)
+			}
+			return v, nil
+		}
+
 		if v.ShowingList {
 			switch msg.String() {
 			case "up", "k":
@@ -121,6 +170,14 @@ func (v PlaylistView) View() string {
 		sb.WriteString(v.TitleStyle.Render("📋 Playlists"))
 		sb.WriteString("\n\n")
 
+		if v.Creating {
+			sb.WriteString(v.CreateInput.View())
+			sb.WriteString("\n\n")
+			sb.WriteString(lipgloss.NewStyle().Foreground(lipgloss.Color("240")).Render(
+				"[Enter] Save  [Esc] Cancel"))
+			return renderFixedPanel(sb.String(), v.Width, v.Height, v.BorderStyle)
+		}
+
 		if len(v.Playlists) == 0 {
 			sb.WriteString(lipgloss.NewStyle().Foreground(lipgloss.Color("240")).Render("No playlists yet"))
 		} else {
@@ -150,14 +207,17 @@ func (v PlaylistView) View() string {
 
 		sb.WriteString("\n")
 		sb.WriteString(lipgloss.NewStyle().Foreground(lipgloss.Color("240")).Render(
-			"[Enter] Open  [↑↓] Navigate"))
+			"[c] Create  [d] Delete  [Enter] Open  [↑↓] Navigate"))
 	} else {
 		// Show playlist tracks
-		sb.WriteString(v.TrackList.View())
+		trackList := v.TrackList
+		trackList.Width = v.Width - 8
+		trackList.Height = v.Height - 10
+		sb.WriteString(trackList.View())
 		sb.WriteString("\n\n")
 		sb.WriteString(lipgloss.NewStyle().Foreground(lipgloss.Color("240")).Render(
-			"[Backspace/Esc] Back  [Enter] Play  [↑↓] Navigate"))
+			"[x] Remove  [Backspace/Esc] Back  [Enter] Play  [↑↓] Navigate"))
 	}
 
-	return v.BorderStyle.Width(v.Width - 4).Render(sb.String())
+	return renderFixedPanel(sb.String(), v.Width, v.Height, v.BorderStyle)
 }

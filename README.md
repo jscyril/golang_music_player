@@ -16,6 +16,7 @@ A robust, terminal-based music player application developed in Go. It offers a f
   - Seek functionality.
   - Volume control.
   - Shuffle and Repeat modes.
+- **Album Art:** Displays embedded cover art directly in the terminal when available, with a fallback tile otherwise.
 - **File Browser:** Integrated file system navigation to locate and add tracks manually.
 - **Mouse Support:** functionality for navigation and timeline seeking.
 
@@ -54,9 +55,10 @@ On the first run, the application will initialize its configuration and data dir
 
 **Global Controls**
 
-- `Tab`: Cycle between Player, Library, and Playlist views.
-- `1` / `2` / `3`: Switch directly to Player / Library / Playlist views.
+- `Tab`: Cycle between Player, Library, Playlist, and Queue views.
+- `1` / `2` / `3` / `4`: Switch directly to Player / Library / Playlist / Queue views.
 - `q` or `Ctrl+C`: Quit the application.
+- `b`: Close the TUI and keep playback running in the background until the process receives Ctrl+C/SIGTERM.
 
 **Playback**
 
@@ -77,6 +79,16 @@ On the first run, the application will initialize its configuration and data dir
 - `Enter`: Play selected track or add to queue.
 - `/`: Activate search mode (in Library view).
 - `Esc`: Exit search or browse mode.
+- `A`: Add selected library track to a playlist.
+
+**Playlist & Queue**
+
+- `c`: Create a playlist.
+- `d`: Delete the selected playlist.
+- `x`: Remove selected track from an open playlist or from the queue.
+- `u` / `d`: Move selected queue item up / down.
+- `C`: Clear the queue.
+- `Enter`: Open playlist, play track, or jump to selected queue item.
 
 ## Configuration
 

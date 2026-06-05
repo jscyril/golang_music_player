@@ -77,16 +77,11 @@ func (s *Service) Register(req api.RegisterRequest) (*api.User, error) {
 		return nil, fmt.Errorf("auth: failed to generate user id: %w", err)
 	}
 
-	role := req.Role
-	if role == "" {
-		role = "user"
-	}
-
 	user := &api.User{
 		ID:           id,
 		Username:     req.Username,
 		PasswordHash: string(hash),
-		Role:         role,
+		Role:         "user",
 		CreatedAt:    time.Now(),
 	}
 

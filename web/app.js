@@ -9,6 +9,8 @@
         username: localStorage.getItem('gtmpc_user') || null,
         tracks: [],
         filteredTracks: [],
+        playlists: [],
+        activePlaylist: null,
         currentTrackIndex: -1,
         isPlaying: false,
     };
@@ -30,6 +32,12 @@
         userDisplay: $('#user-display'),
         trackCount: $('#track-count'),
         libraryTitle: $('#library-title'),
+        libraryNavBtn: $('#library-nav-btn'),
+        playlistNavList: $('#playlist-nav-list'),
+        createPlaylistForm: $('#create-playlist-form'),
+        playlistNameInput: $('#playlist-name-input'),
+        playlistTarget: $('#playlist-target'),
+        deletePlaylistBtn: $('#delete-playlist-btn'),
         playerBar: $('#player-bar'),
         playerTitle: $('#player-title'),
         playerArtist: $('#player-artist'),
@@ -80,6 +88,30 @@
 
         searchTracks(q) {
             return this.request('GET', `/api/library/search?q=${encodeURIComponent(q)}`);
+        },
+
+        getPlaylists() {
+            return this.request('GET', '/api/playlists');
+        },
+
+        createPlaylist(name, description = '') {
+            return this.request('POST', '/api/playlists', { name, description });
+        },
+
+        getPlaylist(id) {
+            return this.request('GET', `/api/playlists/${encodeURIComponent(id)}`);
+        },
+
+        deletePlaylist(id) {
+            return this.request('DELETE', `/api/playlists/${encodeURIComponent(id)}`);
+        },
+
+        addTrackToPlaylist(playlistId, trackId) {
+            return this.request('POST', `/api/playlists/${encodeURIComponent(playlistId)}/tracks`, { track_id: trackId });
+        },
+
+        removeTrackFromPlaylist(playlistId, trackId) {
+            return this.request('DELETE', `/api/playlists/${encodeURIComponent(playlistId)}/tracks/${encodeURIComponent(trackId)}`);
         },
 
         streamUrl(trackId) {
@@ -143,9 +175,8 @@
         clearAuthError();
         const username = $('#reg-username').value.trim();
         const password = $('#reg-password').value;
-        const role = $('#reg-role').value;
         try {
-            await api.register(username, password, role);
+            await api.register(username, password, 'user');
             // Auto-login after registration
             const data = await api.login(username, password);
             state.token = data.token;
@@ -162,6 +193,7 @@
     $('#logout-btn').addEventListener('click', () => {
         state.token = null;
         state.username = null;
+        state.activePlaylist = null;
         localStorage.removeItem('gtmpc_token');
         localStorage.removeItem('gtmpc_user');
         dom.audio.pause();
@@ -178,10 +210,15 @@
         dom.emptyState.classList.add('hidden');
 
         try {
-            const tracks = await api.getTracks();
+            const [tracks, playlists] = await Promise.all([
+                api.getTracks(),
+                api.getPlaylists(),
+            ]);
             state.tracks = tracks || [];
-            state.filteredTracks = state.tracks;
-            renderTracks(state.filteredTracks);
+            state.playlists = playlists || [];
+            state.activePlaylist = null;
+            applyCurrentFilter();
+            renderPlaylists();
         } catch (err) {
             // Token expired — go back to login
             if (err.message.includes('token') || err.message.includes('authorization')) {
@@ -194,6 +231,33 @@
                 dom.emptyState.classList.remove('hidden');
             }
         }
+    }
+
+    function getSourceTracks() {
+        return state.activePlaylist ? (state.activePlaylist.tracks || []) : state.tracks;
+    }
+
+    function applyCurrentFilter() {
+        const query = dom.searchInput.value.trim();
+        const source = getSourceTracks();
+
+        if (query === '') {
+            state.filteredTracks = source;
+            dom.libraryTitle.textContent = state.activePlaylist ? state.activePlaylist.name : 'Your Library';
+        } else {
+            const q = query.toLowerCase();
+            state.filteredTracks = source.filter(t =>
+                (t.title && t.title.toLowerCase().includes(q)) ||
+                (t.artist && t.artist.toLowerCase().includes(q)) ||
+                (t.album && t.album.toLowerCase().includes(q))
+            );
+            dom.libraryTitle.textContent = `Search: "${query}"`;
+        }
+
+        dom.deletePlaylistBtn.classList.toggle('hidden', !state.activePlaylist);
+        dom.playlistTarget.classList.toggle('hidden', state.activePlaylist || state.playlists.length === 0);
+        dom.uploadBtn.classList.toggle('hidden', !!state.activePlaylist);
+        renderTracks(state.filteredTracks);
     }
 
     function renderTracks(tracks) {
@@ -211,8 +275,9 @@
         dom.trackCount.textContent = `${tracks.length} track${tracks.length !== 1 ? 's' : ''}`;
 
         // Build header + rows
+        const actionLabel = state.activePlaylist ? 'Remove' : 'Add';
         let html = `<div class="track-list-header">
-            <span>#</span><span>Title</span><span>Album</span><span>Duration</span>
+            <span>#</span><span>Title</span><span>Album</span><span>Duration</span><span></span>
         </div>`;
 
         tracks.forEach((track, i) => {
@@ -222,7 +287,7 @@
             const title = track.title || 'Unknown Title';
             const album = track.album || '—';
 
-            html += `<div class="track-row${isPlaying ? ' playing' : ''}" data-index="${i}">
+            html += `<div class="track-row${isPlaying ? ' playing' : ''}" data-index="${i}" data-track-id="${escapeHtml(track.id)}">
                 <span class="track-number">${isPlaying ? '♫' : i + 1}</span>
                 <div class="track-info">
                     <span class="track-title">${escapeHtml(title)}</span>
@@ -230,6 +295,7 @@
                 </div>
                 <span class="track-album">${escapeHtml(album)}</span>
                 <span class="track-duration">${dur}</span>
+                <button class="track-action-btn" data-track-id="${escapeHtml(track.id)}">${actionLabel}</button>
             </div>`;
         });
 
@@ -242,30 +308,102 @@
                 playTrack(idx);
             });
         });
+
+        dom.trackList.querySelectorAll('.track-action-btn').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+                e.stopPropagation();
+                if (state.activePlaylist) {
+                    await removeFromActivePlaylist(btn.dataset.trackId);
+                } else {
+                    await addToSelectedPlaylist(btn.dataset.trackId);
+                }
+            });
+        });
+    }
+
+    function renderPlaylists() {
+        dom.libraryNavBtn.classList.toggle('active', !state.activePlaylist);
+        dom.playlistNavList.innerHTML = '';
+
+        state.playlists.forEach(pl => {
+            const btn = document.createElement('button');
+            btn.className = `playlist-nav${state.activePlaylist && state.activePlaylist.id === pl.id ? ' active' : ''}`;
+            btn.textContent = `${pl.name} (${(pl.tracks || []).length})`;
+            btn.addEventListener('click', () => openPlaylist(pl.id));
+            dom.playlistNavList.appendChild(btn);
+        });
+
+        dom.playlistTarget.innerHTML = state.playlists.map(pl =>
+            `<option value="${escapeHtml(pl.id)}">${escapeHtml(pl.name)}</option>`
+        ).join('');
+    }
+
+    async function refreshPlaylists() {
+        state.playlists = await api.getPlaylists() || [];
+        if (state.activePlaylist) {
+            const stillExists = state.playlists.some(pl => pl.id === state.activePlaylist.id);
+            state.activePlaylist = stillExists ? await api.getPlaylist(state.activePlaylist.id) : null;
+        }
+        renderPlaylists();
+        applyCurrentFilter();
+    }
+
+    async function openPlaylist(id) {
+        state.activePlaylist = await api.getPlaylist(id);
+        dom.searchInput.value = '';
+        state.currentTrackIndex = -1;
+        renderPlaylists();
+        applyCurrentFilter();
+    }
+
+    async function addToSelectedPlaylist(trackId) {
+        const playlistId = dom.playlistTarget.value;
+        if (!playlistId) return;
+        await api.addTrackToPlaylist(playlistId, trackId);
+        await refreshPlaylists();
+    }
+
+    async function removeFromActivePlaylist(trackId) {
+        if (!state.activePlaylist) return;
+        state.activePlaylist = await api.removeTrackFromPlaylist(state.activePlaylist.id, trackId);
+        state.playlists = state.playlists.map(pl => pl.id === state.activePlaylist.id ? state.activePlaylist : pl);
+        renderPlaylists();
+        applyCurrentFilter();
     }
 
     // ===== SEARCH =====
     let searchTimeout = null;
     dom.searchInput.addEventListener('input', () => {
         clearTimeout(searchTimeout);
-        const query = dom.searchInput.value.trim();
-
         searchTimeout = setTimeout(() => {
-            if (query === '') {
-                state.filteredTracks = state.tracks;
-                dom.libraryTitle.textContent = 'Your Library';
-            } else {
-                const q = query.toLowerCase();
-                state.filteredTracks = state.tracks.filter(t =>
-                    (t.title && t.title.toLowerCase().includes(q)) ||
-                    (t.artist && t.artist.toLowerCase().includes(q)) ||
-                    (t.album && t.album.toLowerCase().includes(q))
-                );
-                dom.libraryTitle.textContent = `Search: "${query}"`;
-            }
-            renderTracks(state.filteredTracks);
+            applyCurrentFilter();
         }, 200);
     });
+
+    dom.libraryNavBtn.addEventListener('click', () => {
+        state.activePlaylist = null;
+        state.currentTrackIndex = -1;
+        dom.searchInput.value = '';
+        renderPlaylists();
+        applyCurrentFilter();
+    });
+
+    dom.createPlaylistForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const name = dom.playlistNameInput.value.trim();
+        if (!name) return;
+        await api.createPlaylist(name);
+        dom.playlistNameInput.value = '';
+        await refreshPlaylists();
+    });
+
+    dom.deletePlaylistBtn.addEventListener('click', async () => {
+        if (!state.activePlaylist) return;
+        await api.deletePlaylist(state.activePlaylist.id);
+        state.activePlaylist = null;
+        await refreshPlaylists();
+    });
+
     // ===== UPLOAD =====
     const uploadBtn = $('#upload-btn');
     const fileInput = $('#file-input');
@@ -308,8 +446,7 @@
             // Refresh library
             const tracks = await api.getTracks();
             state.tracks = tracks || [];
-            state.filteredTracks = state.tracks;
-            renderTracks(state.filteredTracks);
+            applyCurrentFilter();
         }
     });
 
@@ -350,12 +487,14 @@
             }
 
             dom.audio.src = url;
-            dom.audio.play();
+            await dom.audio.play();
             state.isPlaying = true;
-            updatePlayButton();
-            renderTracks(state.filteredTracks);
         } catch (err) {
             console.error('Stream error:', err);
+            state.isPlaying = false;
+        } finally {
+            updatePlayButton();
+            renderTracks(state.filteredTracks);
         }
     }
 
@@ -376,8 +515,12 @@
             dom.audio.pause();
             state.isPlaying = false;
         } else {
-            dom.audio.play();
-            state.isPlaying = true;
+            dom.audio.play().then(() => {
+                state.isPlaying = true;
+                updatePlayButton();
+                renderTracks(state.filteredTracks);
+            }).catch(err => console.error('Play failed:', err));
+            return;
         }
         updatePlayButton();
         renderTracks(state.filteredTracks);

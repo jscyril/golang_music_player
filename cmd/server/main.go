@@ -75,6 +75,7 @@ func run() error {
 	// --- Step 5: Initialize repositories ---
 	userRepo := database.NewUserRepo(db)
 	trackRepo := database.NewTrackRepo(db)
+	playlistRepo := database.NewPlaylistRepo(db)
 
 	// --- Step 6: Initialize auth service (bcrypt + PostgreSQL) ---
 	authDB := auth.NewDBService(userRepo)
@@ -126,7 +127,6 @@ func run() error {
 		addr = ":8080"
 	}
 
-	srv := server.NewServer(addr, authDB, trackRepo, jwtSecret, webDir, uploadDir)
+	srv := server.NewServer(addr, authDB, trackRepo, playlistRepo, jwtSecret, webDir, uploadDir)
 	return srv.Start(ctx, lib, trackRepo, cfg.MusicDirectories)
 }
-

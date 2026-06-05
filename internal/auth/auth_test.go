@@ -116,8 +116,8 @@ func TestPersistence(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to authenticate after reload: %v", err)
 	}
-	if user.Role != "admin" {
-		t.Errorf("expected role 'admin', got %q", user.Role)
+	if user.Role != "user" {
+		t.Errorf("expected public registration to force role 'user', got %q", user.Role)
 	}
 }
 

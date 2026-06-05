@@ -132,6 +132,17 @@ type LoginResponse struct {
 	User  User   `json:"user"`
 }
 
+// PlaylistRequest is used to create or update a playlist.
+type PlaylistRequest struct {
+	Name        string `json:"name"`
+	Description string `json:"description"`
+}
+
+// PlaylistTrackRequest adds a track to a playlist.
+type PlaylistTrackRequest struct {
+	TrackID string `json:"track_id"`
+}
+
 // APIResponse is a generic JSON envelope for all API responses
 type APIResponse struct {
 	Success bool        `json:"success"`

@@ -91,11 +91,14 @@ func (db *DB) migrate(ctx context.Context) error {
 		// Playlists table
 		`CREATE TABLE IF NOT EXISTS playlists (
 			id          TEXT PRIMARY KEY,
+			owner_username TEXT NOT NULL DEFAULT '',
 			name        TEXT NOT NULL,
 			description TEXT NOT NULL DEFAULT '',
 			created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
 			updated_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
 		)`,
+
+		`ALTER TABLE playlists ADD COLUMN IF NOT EXISTS owner_username TEXT NOT NULL DEFAULT ''`,
 
 		// Playlist-Track junction table (many-to-many)
 		`CREATE TABLE IF NOT EXISTS playlist_tracks (
@@ -109,6 +112,7 @@ func (db *DB) migrate(ctx context.Context) error {
 		`CREATE INDEX IF NOT EXISTS idx_tracks_artist ON tracks(artist)`,
 		`CREATE INDEX IF NOT EXISTS idx_tracks_album  ON tracks(album)`,
 		`CREATE INDEX IF NOT EXISTS idx_users_username ON users(username)`,
+		`CREATE INDEX IF NOT EXISTS idx_playlists_owner ON playlists(owner_username)`,
 	}
 
 	for _, m := range migrations {

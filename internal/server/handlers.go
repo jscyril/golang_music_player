@@ -17,27 +17,30 @@ import (
 	"github.com/jscyril/golang_music_player/api"
 	"github.com/jscyril/golang_music_player/internal/auth"
 	"github.com/jscyril/golang_music_player/internal/database"
+	"github.com/jscyril/golang_music_player/internal/library"
 )
 
 // Handlers holds all dependencies needed by HTTP handlers.
 // This is the dependency-injection root for the server layer.
 type Handlers struct {
-	AuthDB    *auth.DBService
-	TrackRepo *database.TrackRepo
-	JWTSecret []byte
-	TokenTTL  time.Duration
-	UploadDir string // directory where uploaded files are stored
+	AuthDB       *auth.DBService
+	TrackRepo    *database.TrackRepo
+	PlaylistRepo *database.PlaylistRepo
+	JWTSecret    []byte
+	TokenTTL     time.Duration
+	UploadDir    string // directory where uploaded files are stored
 }
 
 // NewHandlers creates a Handlers struct with the given dependencies.
-func NewHandlers(authDB *auth.DBService, trackRepo *database.TrackRepo, secret []byte, uploadDir string) *Handlers {
+func NewHandlers(authDB *auth.DBService, trackRepo *database.TrackRepo, playlistRepo *database.PlaylistRepo, secret []byte, uploadDir string) *Handlers {
 	_ = os.MkdirAll(uploadDir, 0755)
 	return &Handlers{
-		AuthDB:    authDB,
-		TrackRepo: trackRepo,
-		JWTSecret: secret,
-		TokenTTL:  24 * time.Hour,
-		UploadDir: uploadDir,
+		AuthDB:       authDB,
+		TrackRepo:    trackRepo,
+		PlaylistRepo: playlistRepo,
+		JWTSecret:    secret,
+		TokenTTL:     24 * time.Hour,
+		UploadDir:    uploadDir,
 	}
 }
 
@@ -150,6 +153,144 @@ func (h *Handlers) HandleSearchTracks(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, api.APIResponse{Success: true, Data: results})
 }
 
+// --- Playlist Handlers (Protected, user-owned) ---
+
+// HandlePlaylists processes /api/playlists for listing and creation.
+func (h *Handlers) HandlePlaylists(w http.ResponseWriter, r *http.Request) {
+	owner := currentUser(r)
+	if owner == "" {
+		writeJSON(w, http.StatusUnauthorized, api.APIResponse{Success: false, Error: "missing authenticated user"})
+		return
+	}
+
+	switch r.Method {
+	case http.MethodGet:
+		playlists, err := h.PlaylistRepo.GetAll(r.Context(), owner)
+		if err != nil {
+			writeJSON(w, http.StatusInternalServerError, api.APIResponse{Success: false, Error: "failed to fetch playlists"})
+			return
+		}
+		writeJSON(w, http.StatusOK, api.APIResponse{Success: true, Data: playlists})
+
+	case http.MethodPost:
+		var req api.PlaylistRequest
+		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+			writeJSON(w, http.StatusBadRequest, api.APIResponse{Success: false, Error: "invalid request body"})
+			return
+		}
+		req.Name = strings.TrimSpace(req.Name)
+		req.Description = strings.TrimSpace(req.Description)
+		pl, err := h.PlaylistRepo.Create(r.Context(), owner, req.Name, req.Description)
+		if err != nil {
+			writeJSON(w, http.StatusBadRequest, api.APIResponse{Success: false, Error: err.Error()})
+			return
+		}
+		writeJSON(w, http.StatusCreated, api.APIResponse{Success: true, Data: pl})
+
+	default:
+		writeJSON(w, http.StatusMethodNotAllowed, api.APIResponse{Success: false, Error: "method not allowed"})
+	}
+}
+
+// HandlePlaylistByID processes /api/playlists/{id} and /api/playlists/{id}/tracks.
+func (h *Handlers) HandlePlaylistByID(w http.ResponseWriter, r *http.Request) {
+	owner := currentUser(r)
+	if owner == "" {
+		writeJSON(w, http.StatusUnauthorized, api.APIResponse{Success: false, Error: "missing authenticated user"})
+		return
+	}
+
+	parts := strings.Split(strings.Trim(strings.TrimPrefix(r.URL.Path, "/api/playlists/"), "/"), "/")
+	if len(parts) == 0 || parts[0] == "" {
+		writeJSON(w, http.StatusBadRequest, api.APIResponse{Success: false, Error: "playlist ID is required"})
+		return
+	}
+	playlistID := parts[0]
+
+	if len(parts) == 1 {
+		h.handlePlaylistResource(w, r, owner, playlistID)
+		return
+	}
+
+	if parts[1] != "tracks" {
+		writeJSON(w, http.StatusNotFound, api.APIResponse{Success: false, Error: "not found"})
+		return
+	}
+
+	if len(parts) == 2 && r.Method == http.MethodPost {
+		var req api.PlaylistTrackRequest
+		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+			writeJSON(w, http.StatusBadRequest, api.APIResponse{Success: false, Error: "invalid request body"})
+			return
+		}
+		req.TrackID = strings.TrimSpace(req.TrackID)
+		if req.TrackID == "" {
+			writeJSON(w, http.StatusBadRequest, api.APIResponse{Success: false, Error: "track_id is required"})
+			return
+		}
+		if _, err := h.TrackRepo.GetByID(r.Context(), req.TrackID); err != nil {
+			writeJSON(w, http.StatusNotFound, api.APIResponse{Success: false, Error: "track not found"})
+			return
+		}
+		pl, err := h.PlaylistRepo.AddTrack(r.Context(), owner, playlistID, req.TrackID)
+		if err != nil {
+			writeJSON(w, http.StatusNotFound, api.APIResponse{Success: false, Error: err.Error()})
+			return
+		}
+		writeJSON(w, http.StatusOK, api.APIResponse{Success: true, Data: pl})
+		return
+	}
+
+	if len(parts) == 3 && r.Method == http.MethodDelete {
+		pl, err := h.PlaylistRepo.RemoveTrack(r.Context(), owner, playlistID, parts[2])
+		if err != nil {
+			writeJSON(w, http.StatusNotFound, api.APIResponse{Success: false, Error: err.Error()})
+			return
+		}
+		writeJSON(w, http.StatusOK, api.APIResponse{Success: true, Data: pl})
+		return
+	}
+
+	writeJSON(w, http.StatusMethodNotAllowed, api.APIResponse{Success: false, Error: "method not allowed"})
+}
+
+func (h *Handlers) handlePlaylistResource(w http.ResponseWriter, r *http.Request, owner, playlistID string) {
+	switch r.Method {
+	case http.MethodGet:
+		pl, err := h.PlaylistRepo.GetByID(r.Context(), owner, playlistID)
+		if err != nil {
+			writeJSON(w, http.StatusNotFound, api.APIResponse{Success: false, Error: "playlist not found"})
+			return
+		}
+		writeJSON(w, http.StatusOK, api.APIResponse{Success: true, Data: pl})
+
+	case http.MethodPut:
+		var req api.PlaylistRequest
+		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+			writeJSON(w, http.StatusBadRequest, api.APIResponse{Success: false, Error: "invalid request body"})
+			return
+		}
+		req.Name = strings.TrimSpace(req.Name)
+		req.Description = strings.TrimSpace(req.Description)
+		pl, err := h.PlaylistRepo.Update(r.Context(), owner, playlistID, req.Name, req.Description)
+		if err != nil {
+			writeJSON(w, http.StatusBadRequest, api.APIResponse{Success: false, Error: err.Error()})
+			return
+		}
+		writeJSON(w, http.StatusOK, api.APIResponse{Success: true, Data: pl})
+
+	case http.MethodDelete:
+		if err := h.PlaylistRepo.Delete(r.Context(), owner, playlistID); err != nil {
+			writeJSON(w, http.StatusNotFound, api.APIResponse{Success: false, Error: err.Error()})
+			return
+		}
+		writeJSON(w, http.StatusOK, api.APIResponse{Success: true})
+
+	default:
+		writeJSON(w, http.StatusMethodNotAllowed, api.APIResponse{Success: false, Error: "method not allowed"})
+	}
+}
+
 // HandleStreamTrack processes GET /api/stream/{trackID}
 // Streams the audio file using http.ServeFile for efficient range-request support.
 func (h *Handlers) HandleStreamTrack(w http.ResponseWriter, r *http.Request) {
@@ -212,6 +353,7 @@ func (h *Handlers) HandleUploadTrack(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Limit upload size to 50MB
+	r.Body = http.MaxBytesReader(w, r.Body, 50<<20)
 	if err := r.ParseMultipartForm(50 << 20); err != nil {
 		writeJSON(w, http.StatusBadRequest, api.APIResponse{Success: false, Error: "invalid multipart form"})
 		return
@@ -267,15 +409,30 @@ func (h *Handlers) HandleUploadTrack(w http.ResponseWriter, r *http.Request) {
 		album = "Uploads"
 	}
 
-	// Create track record in PostgreSQL
-	track := &api.Track{
-		ID:        trackID,
-		Title:     title,
-		Artist:    artist,
-		Album:     album,
-		FilePath:  savePath,
-		Genre:     r.FormValue("genre"),
-		CreatedAt: time.Now(),
+	metadataReader := library.NewMetadataReader()
+	track, err := metadataReader.Read(savePath)
+	if err != nil {
+		track = &api.Track{Title: title, CreatedAt: time.Now()}
+	}
+	track.ID = trackID
+	track.FilePath = savePath
+	if strings.TrimSpace(r.FormValue("artist")) != "" {
+		track.Artist = artist
+	}
+	if strings.TrimSpace(r.FormValue("album")) != "" {
+		track.Album = album
+	}
+	if strings.TrimSpace(r.FormValue("genre")) != "" {
+		track.Genre = r.FormValue("genre")
+	}
+	if track.Title == "" {
+		track.Title = title
+	}
+	if track.Artist == "" {
+		track.Artist = artist
+	}
+	if track.Album == "" {
+		track.Album = album
 	}
 
 	if err := h.TrackRepo.Upsert(r.Context(), track); err != nil {
@@ -295,3 +452,6 @@ func writeJSON(w http.ResponseWriter, status int, v interface{}) {
 	json.NewEncoder(w).Encode(v)
 }
 
+func currentUser(r *http.Request) string {
+	return r.Header.Get("X-User")
+}

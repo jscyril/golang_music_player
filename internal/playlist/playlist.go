@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"sort"
 	"sync"
 	"time"
 
@@ -75,6 +76,9 @@ func (m *Manager) GetAll() []*api.Playlist {
 	for _, p := range m.playlists {
 		playlists = append(playlists, p)
 	}
+	sort.Slice(playlists, func(i, j int) bool {
+		return playlists[i].UpdatedAt.After(playlists[j].UpdatedAt)
+	})
 	return playlists
 }
 
@@ -122,6 +126,12 @@ func (m *Manager) AddTrack(playlistID string, track *api.Track) error {
 	playlist, exists := m.playlists[playlistID]
 	if !exists {
 		return playerrors.ErrPlaylistNotFound
+	}
+
+	for _, existing := range playlist.Tracks {
+		if existing.ID == track.ID {
+			return nil
+		}
 	}
 
 	playlist.Tracks = append(playlist.Tracks, *track)

@@ -38,12 +38,7 @@ func (s *DBService) Register(ctx context.Context, req api.RegisterRequest) (*api
 		return nil, fmt.Errorf("auth: failed to generate user id: %w", err)
 	}
 
-	role := req.Role
-	if role == "" {
-		role = "user"
-	}
-
-	user, err := s.repo.Create(ctx, id, req.Username, string(hash), role)
+	user, err := s.repo.Create(ctx, id, req.Username, string(hash), "user")
 	if err != nil {
 		// Map DB duplicate key to our sentinel error
 		if err.Error() == "username already taken" {

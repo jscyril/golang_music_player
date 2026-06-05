@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
 	"os/signal"
@@ -86,6 +87,12 @@ func run() error {
 
 	// Run UI
 	if err := ui.Run(audioEngine, lib, plManager); err != nil {
+		if errors.Is(err, ui.ErrBackground) {
+			fmt.Println("TUI closed. Playback continues in the background.")
+			fmt.Println("Press Ctrl+C in this terminal, or send SIGTERM, to stop playback and exit.")
+			<-ctx.Done()
+			return nil
+		}
 		return fmt.Errorf("run ui: %w", err)
 	}
 

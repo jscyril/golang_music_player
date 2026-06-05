@@ -23,8 +23,8 @@ type Server struct {
 
 // NewServer creates a fully configured HTTP server.
 // It wires all routes, middleware, and background workers together.
-func NewServer(addr string, authDB *auth.DBService, trackRepo *database.TrackRepo, jwtSecret []byte, webDir string, uploadDir string) *Server {
-	h := NewHandlers(authDB, trackRepo, jwtSecret, uploadDir)
+func NewServer(addr string, authDB *auth.DBService, trackRepo *database.TrackRepo, playlistRepo *database.PlaylistRepo, jwtSecret []byte, webDir string, uploadDir string) *Server {
+	h := NewHandlers(authDB, trackRepo, playlistRepo, jwtSecret, uploadDir)
 	mux := http.NewServeMux()
 
 	// --- Public routes (no auth required) ---
@@ -37,10 +37,14 @@ func NewServer(addr string, authDB *auth.DBService, trackRepo *database.TrackRep
 	protected.HandleFunc("/api/library/tracks", h.HandleGetTracks)
 	protected.HandleFunc("/api/library/search", h.HandleSearchTracks)
 	protected.HandleFunc("/api/library/upload", h.HandleUploadTrack)
+	protected.HandleFunc("/api/playlists", h.HandlePlaylists)
+	protected.HandleFunc("/api/playlists/", h.HandlePlaylistByID)
 	protected.HandleFunc("/api/stream/", h.HandleStreamTrack)
 
 	// Apply auth middleware to protected routes
 	mux.Handle("/api/library/", Chain(protected, AuthMiddleware(jwtSecret)))
+	mux.Handle("/api/playlists", Chain(protected, AuthMiddleware(jwtSecret)))
+	mux.Handle("/api/playlists/", Chain(protected, AuthMiddleware(jwtSecret)))
 	mux.Handle("/api/stream/", Chain(protected, AuthMiddleware(jwtSecret)))
 
 	// --- Static file serving (Web UI) ---
